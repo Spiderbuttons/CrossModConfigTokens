@@ -44,6 +44,7 @@ namespace CrossModConfigTokens
             GrabMods();
             var api = this.Helper.ModRegistry.GetApi<ContentPatcherAPI>("Pathoschild.ContentPatcher");
             api?.RegisterToken(this.ModManifest, "Config", new ConfigToken());
+            api?.RegisterToken(this.ModManifest, "Translation", new TranslationToken());
         }
 
         private static void GrabMods()
@@ -149,15 +150,32 @@ namespace CrossModConfigTokens
             return null;
         }
 
+        public static ITranslationHelper? GrabTranslationHelper(string uniqueID)
+        {
+            try
+            {
+                if (ModList.TryGetValue(uniqueID, out var mod))
+                {
+                    return mod.Helper.Translation;
+                }
+
+                if (PackList.TryGetValue(uniqueID, out var pack))
+                {
+                    return pack.Translation;
+                }
+            } 
+            catch (Exception e)
+            {
+                Log.Error($"Error grabbing translation helper for {uniqueID}: {e}");
+            }
+            
+            return null!;
+        }
+
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
         {
-            // if (!Context.IsWorldReady)
-            //     return;
-
-            // if (e.Button is SButton.F7) Log.Warn(GrabConfigValue("Spiderbuttons.ButtonsExtraBooksCore", "CheatCodesPrice")?.Value<string>());
-
-            if (e.Button is SButton.F5)
-                Log.Warn(GrabTranslationString("Spiderbuttons.ButtonsExtraBooksCore", "Placeholder"));
+            if (!Context.IsWorldReady)
+                return;
         }
     }
 }
