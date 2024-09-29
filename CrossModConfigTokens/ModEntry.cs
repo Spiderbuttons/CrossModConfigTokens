@@ -42,6 +42,8 @@ namespace CrossModConfigTokens
         private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
         {
             GrabMods();
+            var api = this.Helper.ModRegistry.GetApi<ContentPatcherAPI>("Pathoschild.ContentPatcher");
+            api?.RegisterToken(this.ModManifest, "Config", new ConfigToken());
         }
 
         private static void GrabMods()
@@ -94,14 +96,14 @@ namespace CrossModConfigTokens
         {
             try
             {
-                if (ModList.TryGetValue(uniqueID, out var mod1))
+                if (ModList.TryGetValue(uniqueID, out var mod))
                 {
-                    return mod1.Helper.ModContent.Load<JObject>("config.json");
+                    return mod.Helper.ModContent.Load<JObject>("config.json");
                 }
 
-                if (PackList.TryGetValue(uniqueID, out var mod))
+                if (PackList.TryGetValue(uniqueID, out var pack))
                 {
-                    return mod.ReadJsonFile<JObject>("config.json");
+                    return pack.ReadJsonFile<JObject>("config.json");
                 }
             }
             catch (Exception e)
@@ -112,12 +114,50 @@ namespace CrossModConfigTokens
             return null;
         }
 
+        public static string GrabTranslationString(string uniqueID, string key)
+        {
+            var translations = GrabTranslations(uniqueID);
+            if (translations == null) return string.Empty;
+
+            foreach (var translation in translations)
+            {
+                Log.Alert(translation);
+            }
+
+            return string.Empty;
+        }
+
+        private static IEnumerable<Translation>? GrabTranslations(string uniqueID)
+        {
+            try
+            {
+                if (ModList.TryGetValue(uniqueID, out var mod))
+                {
+                    return mod.Helper.Translation.GetTranslations();
+                }
+
+                if (PackList.TryGetValue(uniqueID, out var pack))
+                {
+                    return pack.Translation.GetTranslations();
+                }
+            } 
+            catch (Exception e)
+            {
+                Log.Error($"Error grabbing translations for {uniqueID}: {e}");
+            }
+            
+            return null;
+        }
+
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
         {
             // if (!Context.IsWorldReady)
             //     return;
 
-            if (e.Button is SButton.F7) Log.Warn(GrabConfigValue("Spiderbuttons.ButtonsExtraBooksCore", "CheatCodesPrice")?.Value<string>());
+            // if (e.Button is SButton.F7) Log.Warn(GrabConfigValue("Spiderbuttons.ButtonsExtraBooksCore", "CheatCodesPrice")?.Value<string>());
+
+            if (e.Button is SButton.F5)
+                Log.Warn(GrabTranslationString("Spiderbuttons.ButtonsExtraBooksCore", "Placeholder"));
         }
     }
 }

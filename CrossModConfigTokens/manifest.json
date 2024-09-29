@@ -5,5 +5,8 @@
     "Description": "Grab other mod config values using Content Patcher tokens.",
     "UniqueID": "Spiderbuttons.CMCT",
     "EntryDll": "CrossModConfigTokens.dll",
-    "UpdateKeys": []
+    "UpdateKeys": [], // TODO
+    "Dependencies": [
+        { "UniqueID": "Pathoschild.ContentPatcher", "IsRequired": true }
+    ]
 }
