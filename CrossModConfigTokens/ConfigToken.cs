@@ -25,7 +25,7 @@ namespace CrossModConfigTokens
         /// <remarks>Default false.</remarks>
         public bool AllowsInput()
         {
-            return false;
+            return true;
         }
 
         /// <summary>Whether the token requires input arguments to work, and does not provide values without it (see <see cref="AllowsInput"/>).</summary>
