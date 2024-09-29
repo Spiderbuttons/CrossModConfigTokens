@@ -6,6 +6,7 @@ using System.Reflection;
 using CrossModConfigTokens.Helpers;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
+using Newtonsoft.Json.Linq;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
@@ -35,9 +36,15 @@ namespace CrossModConfigTokens
             
 
             Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+            Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
+        }
+        
+        private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
+        {
+            GrabMods();
         }
 
-        public static void GrabMods()
+        private static void GrabMods()
         {
             if (ModList.Any() || PackList.Any()) return;
             Log.Alert("Grabbing mods...");
@@ -60,32 +67,49 @@ namespace CrossModConfigTokens
             }
         }
 
-        public static void GrabConfig(IMod mod)
+        public static JToken? GrabConfigValue(string uniqueID, string? valueToFind)
         {
-            var config = mod.Helper.ReadConfig<Dictionary<string, object>>();
-            
-            Log.Error(mod.ModManifest.UniqueID);
-            foreach (var kvp in config)
+            var config = GrabConfig(uniqueID);
+            if (config == null) return null;
+
+            if (valueToFind is null)
             {
-                if (!kvp.Value.GetType().IsPrimitive)
-                {
-                    Log.Error("Found an object config!");
-                }
-                Log.Alert($"{kvp.Key}: {kvp.Value}");
+                return null;
             }
+            
+            var valueSplit = valueToFind.Split('.');
+            var currentValue = config.GetValue(valueSplit[0]);
+            if (valueSplit.Length == 1) return currentValue;
+            
+            for (var i = 1; i < valueSplit.Length; i++)
+            {
+                if (currentValue is not JObject currentObject) return null;
+                currentValue = currentObject.GetValue(valueSplit[i]);
+            }
+            
+            return currentValue;
         }
 
-        public static void GrabConfig(IContentPack mod)
+        private static JObject? GrabConfig(string uniqueID)
         {
-            var config = mod.ReadJsonFile<Dictionary<string, object>>("config.json");
-            if (config == null) return;
-            
-            Log.Error(mod.Manifest.UniqueID);
-            foreach (var kvp in config)
+            try
             {
-                Log.Error(kvp.Value.GetType());
-                Log.Alert($"{kvp.Key}: {kvp.Value}");
+                if (ModList.TryGetValue(uniqueID, out var mod1))
+                {
+                    return mod1.Helper.ModContent.Load<JObject>("config.json");
+                }
+
+                if (PackList.TryGetValue(uniqueID, out var mod))
+                {
+                    return mod.ReadJsonFile<JObject>("config.json");
+                }
             }
+            catch (Exception e)
+            {
+                Log.Error($"Error grabbing config for {uniqueID}: {e}");
+            }
+
+            return null;
         }
 
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
@@ -93,9 +117,7 @@ namespace CrossModConfigTokens
             // if (!Context.IsWorldReady)
             //     return;
 
-            if (e.Button is SButton.F5) GrabMods();
-            
-            if (e.Button is SButton.F6) GrabConfig(ModList["Pathoschild.LookupAnything"]);
+            if (e.Button is SButton.F7) Log.Warn(GrabConfigValue("Spiderbuttons.ButtonsExtraBooksCore", "CheatCodesPrice")?.Value<string>());
         }
     }
 }
