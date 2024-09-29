@@ -1,0 +1,9 @@
+{
+    "Name": "Cross-Mod Config Tokens",
+    "Author": "Spiderbuttons",
+    "Version": "1.0.0",
+    "Description": "Grab other mod config values using Content Patcher tokens.",
+    "UniqueID": "Spiderbuttons.CMCT",
+    "EntryDll": "CrossModConfigTokens.dll",
+    "UpdateKeys": []
+}

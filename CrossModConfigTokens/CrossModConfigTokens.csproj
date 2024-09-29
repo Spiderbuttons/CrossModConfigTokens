@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Version>2.0.0</Version>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>Latest</LangVersion>
+        <GamePath>C:\Program Files (x86)\Steam\steamapps\common\Stardew Valley</GamePath>
+        <GameModsPath>$(GamePath)\ModsDebug</GameModsPath>
+        <EnableHarmony>true</EnableHarmony>
+        <EnableModDeploy>true</EnableModDeploy>
+        <EnableModZip>true</EnableModZip>
+        <ModFolderName>CrossPackConfigTokens</ModFolderName>
+        <Title>CrossPackConfigTokens</Title>
+        <Authors>Spiderbuttons</Authors>
+        <PackageId>CrossModConfigTokens</PackageId>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <OutputPath>bin\Debug</OutputPath>
+    </PropertyGroup>
+
+
+    <ItemGroup>
+        <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1"/>
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <Reference Include="Newtonsoft.Json" Private="False">
+        <HintPath>$(GamePath)\smapi-internal\Newtonsoft.Json.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+
+    <PropertyGroup>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    </PropertyGroup>
+</Project>
