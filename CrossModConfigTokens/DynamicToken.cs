@@ -10,12 +10,10 @@ namespace CrossModConfigTokens
     internal class DynamicToken
     {
         private object? dynamicTokenManager;
-
         private readonly object emptyInputArgs =
             Activator.CreateInstance(AccessTools.TypeByName("ContentPatcher.Framework.Tokens.EmptyInputArguments"),
                 new object[] { })!;
-        
-        
+
         /// <summary>Get whether the token allows input arguments (e.g. an NPC name for a relationship token).</summary>
         /// <remarks>Default false.</remarks>
         public bool AllowsInput()
@@ -63,9 +61,6 @@ namespace CrossModConfigTokens
             return true;
         }
 
-        /****
-         ** State
-         ****/
         /// <summary>Update the values when the context changes.</summary>
         /// <returns>Returns whether the value changed, which may trigger patch updates.</returns>
         public bool UpdateContext()
