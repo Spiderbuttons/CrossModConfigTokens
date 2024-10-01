@@ -10,20 +10,12 @@ using Newtonsoft.Json.Linq;
 
 namespace CrossModConfigTokens
 {
-    /// <summary>Method delegates which represent a simplified version of <see cref="IValueProvider"/> that can be implemented by custom mod tokens through the API via <see cref="ConventionValueProvider"/>.</summary>
-    /// <remarks>Methods should be kept in sync with <see cref="ConventionWrapper"/>.</remarks>
     internal class ConfigToken
     {
-        /*********
-         ** Fields
-         *********/
         private string uniqueID = ModEntry.Manifest.UniqueID;
         private string configKey = string.Empty;
         private string? configValue;
-
-        /****
-         ** Metadata
-         ****/
+        
         /// <summary>Get whether the token allows input arguments (e.g. an NPC name for a relationship token).</summary>
         /// <remarks>Default false.</remarks>
         public bool AllowsInput()
@@ -43,7 +35,7 @@ namespace CrossModConfigTokens
         /// <remarks>Default true.</remarks>
         public bool CanHaveMultipleValues(string? input = null)
         {
-            return false;
+            return true;
         }
 
         /// <summary>Validate that the provided input arguments are valid.</summary>
@@ -69,10 +61,7 @@ namespace CrossModConfigTokens
             error = null;
             return true;
         }
-
-        /****
-         ** State
-         ****/
+        
         /// <summary>Update the values when the context changes.</summary>
         /// <returns>Returns whether the value changed, which may trigger patch updates.</returns>
         public bool UpdateContext()
@@ -82,13 +71,17 @@ namespace CrossModConfigTokens
             if (newConfigValue == null) return oldConfig != null;
 
             configValue = newConfigValue.Value<string>();
-            return oldConfig != configValue;
+            if (!Equals(oldConfig, configValue))
+            {
+                Log.Alert($"Config value changed from {oldConfig} to {configValue}");
+            }
+            return !Equals(oldConfig, configValue);
         }
 
         /// <summary>Get whether the token is available for use.</summary>
         public bool IsReady()
         {
-            return ModEntry.ContentPatcherAPI != null && (ModEntry.ModList.Any() || ModEntry.PackList.Any()) && ModEntry.ContentPatcherAPI.IsConditionsApiReady;
+            return ModEntry.ModList.Any() || ModEntry.PackList.Any();
         }
 
         /// <summary>Get the current values.</summary>
@@ -105,8 +98,13 @@ namespace CrossModConfigTokens
             uniqueID = split[0];
             configKey = split[1];
             configValue = ModEntry.GrabConfigValue(uniqueID, split[1])?.Value<string>();
+
+            if (configValue is null || string.IsNullOrEmpty(configValue)) yield break;
             
-            yield return configValue ?? string.Empty;
+            foreach (var value in configValue?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim())!)
+            {
+                yield return value;
+            }
         }
     }
 }
