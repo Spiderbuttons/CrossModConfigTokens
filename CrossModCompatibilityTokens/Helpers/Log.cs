@@ -3,7 +3,7 @@ using StardewModdingAPI;
 using System.Linq;
 using HarmonyLib;
 
-namespace CrossModConfigTokens.Helpers;
+namespace CrossModCompatibilityTokens.Helpers;
 
 public static class Log
 {

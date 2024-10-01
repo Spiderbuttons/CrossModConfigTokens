@@ -8,10 +8,10 @@
         <EnableHarmony>true</EnableHarmony>
         <EnableModDeploy>true</EnableModDeploy>
         <EnableModZip>true</EnableModZip>
-        <ModFolderName>CrossPackConfigTokens</ModFolderName>
-        <Title>CrossPackConfigTokens</Title>
+        <ModFolderName>CrossModCompatibilityTokens</ModFolderName>
+        <Title>CrossModCompatibilityTokens</Title>
         <Authors>Spiderbuttons</Authors>
-        <PackageId>CrossModConfigTokens</PackageId>
+        <PackageId>CrossModCompatibilityTokens</PackageId>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <OutputPath>bin\Debug</OutputPath>

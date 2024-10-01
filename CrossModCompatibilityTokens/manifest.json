@@ -1,10 +1,10 @@
 {
-    "Name": "Cross-Mod Config Tokens",
+    "Name": "Cross-Mod Compatibility Tokens",
     "Author": "Spiderbuttons",
     "Version": "1.0.0",
-    "Description": "Grab other mod config values using Content Patcher tokens.",
+    "Description": "Grab config values, translations, and dynamic tokens from other mods using Content Patcher tokens.",
     "UniqueID": "Spiderbuttons.CMCPT",
-    "EntryDll": "CrossModConfigTokens.dll",
+    "EntryDll": "CrossModCompatibilityTokens.dll",
     "UpdateKeys": [], // TODO
     "Dependencies": [
         { "UniqueID": "Pathoschild.ContentPatcher", "IsRequired": true }

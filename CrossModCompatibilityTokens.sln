@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrossModConfigTokens", "CrossModConfigTokens\CrossModConfigTokens.csproj", "{2F306224-1075-4EB0-906F-23661912BE31}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrossModCompatibilityTokens", "CrossModCompatibilityTokens\CrossModCompatibilityTokens.csproj", "{2F306224-1075-4EB0-906F-23661912BE31}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

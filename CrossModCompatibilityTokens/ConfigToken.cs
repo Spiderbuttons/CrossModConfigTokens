@@ -5,10 +5,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using ContentPatcher;
 using ContentPatcher.Framework;
-using CrossModConfigTokens.Helpers;
+using CrossModCompatibilityTokens.Helpers;
 using Newtonsoft.Json.Linq;
 
-namespace CrossModConfigTokens
+namespace CrossModCompatibilityTokens
 {
     internal class ConfigToken
     {
@@ -71,10 +71,6 @@ namespace CrossModConfigTokens
             if (newConfigValue == null) return oldConfig != null;
 
             configValue = newConfigValue.Value<string>();
-            if (!Equals(oldConfig, configValue))
-            {
-                Log.Alert($"Config value changed from {oldConfig} to {configValue}");
-            }
             return !Equals(oldConfig, configValue);
         }
 
