@@ -3,7 +3,7 @@
     "Author": "Spiderbuttons",
     "Version": "1.0.0",
     "Description": "Grab other mod config values using Content Patcher tokens.",
-    "UniqueID": "Spiderbuttons.CMCT",
+    "UniqueID": "Spiderbuttons.CMCPT",
     "EntryDll": "CrossModConfigTokens.dll",
     "UpdateKeys": [], // TODO
     "Dependencies": [

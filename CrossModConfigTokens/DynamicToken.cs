@@ -3,23 +3,32 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using ContentPatcher;
-using ContentPatcher.Framework;
 using CrossModConfigTokens.Helpers;
+using HarmonyLib;
 using Newtonsoft.Json.Linq;
+using StardewModdingAPI;
+using StardewValley;
 
 namespace CrossModConfigTokens
 {
     /// <summary>Method delegates which represent a simplified version of <see cref="IValueProvider"/> that can be implemented by custom mod tokens through the API via <see cref="ConventionValueProvider"/>.</summary>
     /// <remarks>Methods should be kept in sync with <see cref="ConventionWrapper"/>.</remarks>
-    internal class ConfigToken
+    internal class DynamicToken
     {
         /*********
          ** Fields
          *********/
-        private string uniqueID = ModEntry.Manifest.UniqueID;
-        private string configKey = string.Empty;
-        private string? configValue;
+        private object? dynamicTokenManager;
+
+        private readonly object emptyInputArgs =
+            Activator.CreateInstance(AccessTools.TypeByName("ContentPatcher.Framework.Tokens.EmptyInputArguments"),
+                new object[] { })!;
+
+        private string? uniqueID;
+        private string dynamicTokenKey = string.Empty;
+        private List<string> dynamicTokenValue = [];
+
+        private bool refresh = false;
 
         /****
          ** Metadata
@@ -53,7 +62,8 @@ namespace CrossModConfigTokens
         /// <remarks>Default true.</remarks>
         public bool TryValidateInput(string? input, [NotNullWhen(false)] out string? error)
         {
-            string[] split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ?? [];
+            string[] split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ??
+                             [];
             if (split.Length != 2)
             {
                 error = "Expected two arguments.";
@@ -77,18 +87,41 @@ namespace CrossModConfigTokens
         /// <returns>Returns whether the value changed, which may trigger patch updates.</returns>
         public bool UpdateContext()
         {
-            var oldConfig = configValue;
-            var newConfigValue = ModEntry.GrabConfigValue(uniqueID, configKey);
-            if (newConfigValue == null) return oldConfig != null;
+            return true;
 
-            configValue = newConfigValue.Value<string>();
-            return oldConfig != configValue;
+            // if (dynamicTokenManager is null)
+            // {
+            //     dynamicTokenManager = ModEntry.GrabDynamicToken(uniqueID, dynamicTokenKey);
+            // }
+            //
+            // if (dynamicTokenManager is null) return true;
+            //
+            // var oldValue = new List<string>(dynamicTokenValue);
+            //
+            // var values = AccessTools.Method(dynamicTokenManager.GetType(), "GetValues")
+            //     .Invoke(dynamicTokenManager, new object[] { emptyInputArgs });
+            // if (values is null)
+            // {
+            //     Log.Alert("No values! Returning true.");
+            //     return true;
+            // }
+            //
+            // dynamicTokenValue.Clear();
+            // foreach (var value in (values as IEnumerable<string>)!)
+            // {
+            //     dynamicTokenValue.Add(value);
+            // }
+            //
+            // var shouldUpdate = !oldValue.SequenceEqual(dynamicTokenValue);
+            // Log.Alert($"Should update: {shouldUpdate}.");
+            // return shouldUpdate;
         }
 
         /// <summary>Get whether the token is available for use.</summary>
         public bool IsReady()
         {
-            return ModEntry.ContentPatcherAPI != null && (ModEntry.ModList.Any() || ModEntry.PackList.Any()) && ModEntry.ContentPatcherAPI.IsConditionsApiReady;
+            return ModEntry.ContentPatcherAPI != null && (ModEntry.ModList.Any() || ModEntry.PackList.Any()) &&
+                   ModEntry.ContentPatcherAPI.IsConditionsApiReady;
         }
 
         /// <summary>Get the current values.</summary>
@@ -103,10 +136,19 @@ namespace CrossModConfigTokens
             }
 
             uniqueID = split[0];
-            configKey = split[1];
-            configValue = ModEntry.GrabConfigValue(uniqueID, split[1])?.Value<string>();
-            
-            yield return configValue ?? string.Empty;
+            dynamicTokenKey = split[1];
+
+            dynamicTokenManager = ModEntry.GrabDynamicToken(uniqueID, dynamicTokenKey);
+            if (dynamicTokenManager is null) yield break;
+
+            var values = AccessTools.Method(dynamicTokenManager!.GetType(), "GetValues")
+                .Invoke(dynamicTokenManager, new object[] { emptyInputArgs });
+            if (values is null) yield break;
+
+            foreach (var value in (values as IEnumerable<string>)!)
+            {
+                yield return value;
+            }
         }
     }
 }
