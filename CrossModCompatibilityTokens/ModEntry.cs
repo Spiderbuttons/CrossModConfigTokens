@@ -57,6 +57,7 @@ namespace CrossModCompatibilityTokens
             ContentPatcherAPI.RegisterToken(this.ModManifest, "Config", new ConfigToken());
             ContentPatcherAPI.RegisterToken(this.ModManifest, "Translation", new TranslationToken());
             ContentPatcherAPI.RegisterToken(this.ModManifest, "Dynamic", new DynamicToken());
+            ContentPatcherAPI.RegisterToken(this.ModManifest, "Asset", new AssetToken());
         }
         
         private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
@@ -86,8 +87,7 @@ namespace CrossModCompatibilityTokens
                 var modContext = AccessTools.Property(modCachedContext!.GetType(), "Context")
                     ?.GetValue(modCachedContext);
                 
-                // cre
-                Log.Warn($"Grabbing token '{tokenKey}' from '{uniqueID}'");
+                Log.Trace($"Grabbing token '{tokenKey}' from '{uniqueID}'");
                 return modContext!.GetType().GetMethod("GetToken")?.Invoke(modContext, new object[] { tokenKey, true });
             } 
             catch (Exception e)
@@ -178,44 +178,6 @@ namespace CrossModCompatibilityTokens
             return null;
         }
 
-        public static string GrabTranslationString(string uniqueID, string key)
-        {
-            var translations = GrabTranslations(uniqueID);
-            if (translations == null) return string.Empty;
-
-            foreach (var translation in translations)
-            {
-                if (translation.Key.Equals(key))
-                {
-                    return translation;
-                }
-            }
-
-            return string.Empty;
-        }
-
-        private static IEnumerable<Translation>? GrabTranslations(string uniqueID)
-        {
-            try
-            {
-                if (ModList.TryGetValue(uniqueID, out var mod))
-                {
-                    return mod.Helper.Translation.GetTranslations();
-                }
-
-                if (PackList.TryGetValue(uniqueID, out var pack))
-                {
-                    return pack.Translation.GetTranslations();
-                }
-            }
-            catch (Exception e)
-            {
-                Log.Error($"Error grabbing translations for {uniqueID}: {e}");
-            }
-
-            return null;
-        }
-
         public static ITranslationHelper? GrabTranslationHelper(string uniqueID)
         {
             try
@@ -235,6 +197,39 @@ namespace CrossModCompatibilityTokens
                 Log.Error($"Error grabbing translation helper for {uniqueID}: {e}");
             }
 
+            return null;
+        }
+
+        public static IAssetName? GrabInternalAssetName(string uniqueID, string path)
+        {
+            var modContentHelper = GrabModContentHelper(uniqueID);
+            if (modContentHelper is null)
+            {
+                Log.Error($"Could not find mod content helper for '{uniqueID}'!");
+                return null;
+            }
+            return modContentHelper.GetInternalAssetName(path);
+        }
+
+        public static IModContentHelper? GrabModContentHelper(string uniqueID)
+        {
+            try
+            {
+                if (PackList.TryGetValue(uniqueID, out var pack))
+                {
+                    return pack.ModContent;
+                }
+
+                if (ModList.TryGetValue(uniqueID, out var mod))
+                {
+                    return mod.Helper.ModContent;
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Error grabbing mod content helper for {uniqueID}: {e}");
+            }
+            
             return null;
         }
     }
