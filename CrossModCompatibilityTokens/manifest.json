@@ -2,7 +2,7 @@
     "Name": "Cross-Mod Compatibility Tokens",
     "Author": "Spiderbuttons",
     "Version": "1.1.0",
-    "Description": "Grab config values, translations, and dynamic tokens from other mods with special Content Patcher tokens.",
+    "Description": "Grab config values, translations, dynamic tokens, and internal assets from other mods with special Content Patcher tokens.",
     "UniqueID": "Spiderbuttons.CMCT",
     "EntryDll": "CrossModCompatibilityTokens.dll",
     "UpdateKeys": [ "Nexus:28284" ],
