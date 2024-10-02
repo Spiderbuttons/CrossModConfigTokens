@@ -12,9 +12,12 @@ namespace CrossModCompatibilityTokens
 {
     internal class ConfigToken
     {
-        private string uniqueID = ModEntry.Manifest.UniqueID;
-        private string configKey = string.Empty;
-        private string? configValue;
+        //private string uniqueID = ModEntry.Manifest.UniqueID;
+        //private string configKey = string.Empty;
+        //private string? configValue;
+
+        // dictionary of uniqueID, configKey, and configValue
+        private Dictionary<string, KeyValuePair<string, string?>> cachedValues = new();
         
         /// <summary>Get whether the token allows input arguments (e.g. an NPC name for a relationship token).</summary>
         /// <remarks>Default false.</remarks>
@@ -66,12 +69,18 @@ namespace CrossModCompatibilityTokens
         /// <returns>Returns whether the value changed, which may trigger patch updates.</returns>
         public bool UpdateContext()
         {
-            var oldConfig = configValue;
-            var newConfigValue = ModEntry.GrabConfigValue(uniqueID, configKey);
-            if (newConfigValue == null) return oldConfig != null;
+            foreach (var cache in cachedValues)
+            {
+                var oldConfigValue = cache.Value.Value;
+                var newConfigValue = ModEntry.GrabConfigValue(cache.Key, cache.Value.Key);
 
-            configValue = newConfigValue.Value<string>();
-            return !Equals(oldConfig, configValue);
+                if (oldConfigValue == newConfigValue?.Value<string>()) continue;
+                
+                cachedValues[cache.Key] = new KeyValuePair<string, string?>(cache.Value.Key, newConfigValue?.Value<string>());
+                return true;
+            }
+            
+            return false;
         }
 
         /// <summary>Get whether the token is available for use.</summary>
@@ -91,11 +100,14 @@ namespace CrossModCompatibilityTokens
                 yield break;
             }
 
-            uniqueID = split[0];
-            configKey = split[1];
-            configValue = ModEntry.GrabConfigValue(uniqueID, split[1])?.Value<string>();
-
-            if (configValue is null || string.IsNullOrEmpty(configValue)) yield break;
+            var uniqueID = split[0];
+            var configKey = split[1];
+            if (!cachedValues.ContainsKey(uniqueID))
+            {
+                cachedValues.Add(uniqueID, new KeyValuePair<string, string?>(configKey, ModEntry.GrabConfigValue(uniqueID, configKey)?.Value<string>()));
+            }
+            
+            var configValue = cachedValues[uniqueID].Value;
             
             foreach (var value in configValue?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim())!)
             {
