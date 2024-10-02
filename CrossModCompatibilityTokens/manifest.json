@@ -5,7 +5,7 @@
     "Description": "Grab config values, translations, and dynamic tokens from other mods with special Content Patcher tokens.",
     "UniqueID": "Spiderbuttons.CMCT",
     "EntryDll": "CrossModCompatibilityTokens.dll",
-    "UpdateKeys": [], // TODO
+    "UpdateKeys": [ "Nexus:28284" ],
     "Dependencies": [
         { "UniqueID": "Pathoschild.ContentPatcher", "IsRequired": true }
     ]
