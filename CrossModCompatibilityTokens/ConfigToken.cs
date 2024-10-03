@@ -17,7 +17,7 @@ namespace CrossModCompatibilityTokens
         //private string? configValue;
 
         // dictionary of uniqueID, configKey, and configValue
-        private Dictionary<string, KeyValuePair<string, string?>> cachedValues = new();
+        private Dictionary<string, Dictionary<string, string?>> cachedValues = new();
         
         /// <summary>Get whether the token allows input arguments (e.g. an NPC name for a relationship token).</summary>
         /// <remarks>Default false.</remarks>
@@ -69,15 +69,17 @@ namespace CrossModCompatibilityTokens
         /// <returns>Returns whether the value changed, which may trigger patch updates.</returns>
         public bool UpdateContext()
         {
-            foreach (var cache in cachedValues)
+            foreach (var modConfig in cachedValues)
             {
-                var oldConfigValue = cache.Value.Value;
-                var newConfigValue = ModEntry.GrabConfigValue(cache.Key, cache.Value.Key);
-
-                if (oldConfigValue == newConfigValue?.Value<string>()) continue;
-                
-                cachedValues[cache.Key] = new KeyValuePair<string, string?>(cache.Value.Key, newConfigValue?.Value<string>());
-                return true;
+                foreach (var (key, oldConfigValue) in modConfig.Value)
+                {
+                    var newConfigValue = ModEntry.GrabConfigValue(modConfig.Key, key)?.Value<string>();
+                    
+                    if (oldConfigValue == newConfigValue) continue;
+                    
+                    cachedValues[modConfig.Key][key] = newConfigValue;
+                    return true;
+                }
             }
             
             return false;
@@ -104,10 +106,15 @@ namespace CrossModCompatibilityTokens
             var configKey = split[1];
             if (!cachedValues.ContainsKey(uniqueID))
             {
-                cachedValues.Add(uniqueID, new KeyValuePair<string, string?>(configKey, ModEntry.GrabConfigValue(uniqueID, configKey)?.Value<string>()));
+                cachedValues.Add(uniqueID, new Dictionary<string, string?>());
             }
             
-            var configValue = cachedValues[uniqueID].Value;
+            if (!cachedValues[uniqueID].ContainsKey(configKey))
+            {
+                cachedValues[uniqueID].Add(configKey, ModEntry.GrabConfigValue(uniqueID, configKey)?.Value<string>());
+            }
+            
+            var configValue = cachedValues[uniqueID][configKey];
             
             foreach (var value in configValue?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim())!)
             {
