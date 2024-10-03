@@ -3,21 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using ContentPatcher;
-using ContentPatcher.Framework;
-using CrossModCompatibilityTokens.Helpers;
 using Newtonsoft.Json.Linq;
 
 namespace CrossModCompatibilityTokens
 {
     internal class ConfigToken
     {
-        //private string uniqueID = ModEntry.Manifest.UniqueID;
-        //private string configKey = string.Empty;
-        //private string? configValue;
-
-        // dictionary of uniqueID, configKey, and configValue
-        private Dictionary<string, Dictionary<string, string?>> cachedValues = new();
+        private readonly Dictionary<string, Dictionary<string, string?>> cachedValues = new();
         
         /// <summary>Get whether the token allows input arguments (e.g. an NPC name for a relationship token).</summary>
         /// <remarks>Default false.</remarks>
@@ -69,6 +61,7 @@ namespace CrossModCompatibilityTokens
         /// <returns>Returns whether the value changed, which may trigger patch updates.</returns>
         public bool UpdateContext()
         {
+            bool shouldUpdate = false;
             foreach (var modConfig in cachedValues)
             {
                 foreach (var (key, oldConfigValue) in modConfig.Value)
@@ -78,11 +71,11 @@ namespace CrossModCompatibilityTokens
                     if (oldConfigValue == newConfigValue) continue;
                     
                     cachedValues[modConfig.Key][key] = newConfigValue;
-                    return true;
+                    shouldUpdate = true;
                 }
             }
             
-            return false;
+            return shouldUpdate;
         }
 
         /// <summary>Get whether the token is available for use.</summary>
@@ -96,7 +89,7 @@ namespace CrossModCompatibilityTokens
         public IEnumerable<string> GetValues(string? input)
         {
             if (input is null) yield break;
-            var split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ?? [];
+            var split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray();
             if (split.Length != 2)
             {
                 yield break;
