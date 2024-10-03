@@ -3,19 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using ContentPatcher;
-using ContentPatcher.Framework;
-using CrossModCompatibilityTokens.Helpers;
-using Newtonsoft.Json.Linq;
 using StardewModdingAPI;
 
 namespace CrossModCompatibilityTokens
 {
     internal class AssetToken
     {
-        private string uniqueID = ModEntry.Manifest.UniqueID;
-        private string assetPath = string.Empty;
-        private IAssetName? assetName;
+        private readonly Dictionary<string, Dictionary<string, IAssetName?>> cachedAssetNames = new();
         
         /// <summary>Get whether the token allows input arguments (e.g. an NPC name for a relationship token).</summary>
         /// <remarks>Default false.</remarks>
@@ -36,7 +30,7 @@ namespace CrossModCompatibilityTokens
         /// <remarks>Default true.</remarks>
         public bool CanHaveMultipleValues(string? input = null)
         {
-            return true;
+            return false;
         }
 
         /// <summary>Validate that the provided input arguments are valid.</summary>
@@ -67,12 +61,21 @@ namespace CrossModCompatibilityTokens
         /// <returns>Returns whether the value changed, which may trigger patch updates.</returns>
         public bool UpdateContext()
         {
-            var oldAsset = assetName;
-            var newAsset = ModEntry.GrabInternalAssetName(uniqueID, assetPath);
-            if (newAsset == null) return oldAsset != null;
-
-            assetName = newAsset;
-            return !Equals(oldAsset, assetName);
+            var shouldUpdate = false;
+            foreach (var modAsset in cachedAssetNames)
+            {
+                foreach (var (key, oldAssetName) in modAsset.Value)
+                {
+                    var newAssetName = ModEntry.GrabInternalAssetName(modAsset.Key, key);
+                    
+                    if (oldAssetName == newAssetName) continue;
+                    
+                    cachedAssetNames[modAsset.Key][key] = newAssetName;
+                    shouldUpdate = true;
+                }
+            }
+            
+            return shouldUpdate;
         }
 
         /// <summary>Get whether the token is available for use.</summary>
@@ -86,19 +89,29 @@ namespace CrossModCompatibilityTokens
         public IEnumerable<string> GetValues(string? input)
         {
             if (input is null) yield break;
-            var split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ?? [];
+            var split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray();
             if (split.Length != 2)
             {
                 yield break;
             }
 
-            uniqueID = split[0];
-            assetPath = split[1];
-            assetName = ModEntry.GrabInternalAssetName(uniqueID, split[1]);
-
-            if (assetName is null || string.IsNullOrEmpty(assetName.Name)) yield break;
+            var uniqueID = split[0];
+            var assetPath = split[1];
+            if (!cachedAssetNames.ContainsKey(uniqueID))
+            {
+                cachedAssetNames.Add(uniqueID, new Dictionary<string, IAssetName?>());
+            }
             
-            foreach (var value in assetName.Name.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim())!)
+            if (!cachedAssetNames[uniqueID].ContainsKey(assetPath))
+            {
+                cachedAssetNames[uniqueID].Add(assetPath, ModEntry.GrabInternalAssetName(uniqueID, assetPath));
+            }
+            
+            var assetName = cachedAssetNames[uniqueID][assetPath];
+            
+            if (assetName is null) yield break;
+            
+            foreach (var value in assetName.Name.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()))
             {
                 yield return value;
             }
