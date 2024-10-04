@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using CrossModCompatibilityTokens.Helpers;
 using Newtonsoft.Json.Linq;
 
 namespace CrossModCompatibilityTokens
@@ -10,7 +11,8 @@ namespace CrossModCompatibilityTokens
     internal class ConfigToken
     {
         private readonly Dictionary<string, Dictionary<string, string?>> cachedValues = new();
-        
+        private bool shouldUpdate = false;
+
         /// <summary>Get whether the token allows input arguments (e.g. an NPC name for a relationship token).</summary>
         /// <remarks>Default false.</remarks>
         public bool AllowsInput()
@@ -40,7 +42,8 @@ namespace CrossModCompatibilityTokens
         /// <remarks>Default true.</remarks>
         public bool TryValidateInput(string? input, [NotNullWhen(false)] out string? error)
         {
-            string[] split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ?? [];
+            string[] split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ??
+                             [];
             if (split.Length != 2)
             {
                 error = "Expected two arguments.";
@@ -56,20 +59,24 @@ namespace CrossModCompatibilityTokens
             error = null;
             return true;
         }
-        
+
         /// <summary>Update the values when the context changes.</summary>
         /// <returns>Returns whether the value changed, which may trigger patch updates.</returns>
         public bool UpdateContext()
         {
-            bool shouldUpdate = false;
+            if (shouldUpdate)
+            {
+                shouldUpdate = false;
+                return true;
+            }
+            
             foreach (var modConfig in cachedValues)
             {
                 foreach (var (key, oldConfigValue) in modConfig.Value)
                 {
                     var newConfigValue = ModEntry.GrabConfigValue(modConfig.Key, key)?.Value<string>();
-                    
                     if (oldConfigValue == newConfigValue) continue;
-                    
+
                     cachedValues[modConfig.Key][key] = newConfigValue;
                     shouldUpdate = true;
                 }
@@ -100,15 +107,23 @@ namespace CrossModCompatibilityTokens
             if (!cachedValues.ContainsKey(uniqueID))
             {
                 cachedValues.Add(uniqueID, new Dictionary<string, string?>());
+                shouldUpdate = true;
             }
-            
+
             if (!cachedValues[uniqueID].ContainsKey(configKey))
             {
                 cachedValues[uniqueID].Add(configKey, ModEntry.GrabConfigValue(uniqueID, configKey)?.Value<string>());
+                shouldUpdate = true;
             }
-            
+
+            var valueCheck = ModEntry.GrabConfigValue(uniqueID, configKey)?.Value<string>();
+            if (cachedValues[uniqueID][configKey] != valueCheck)
+            {
+                shouldUpdate = true;
+            }
+
             var configValue = cachedValues[uniqueID][configKey];
-            
+
             foreach (var value in configValue?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim())!)
             {
                 yield return value;
