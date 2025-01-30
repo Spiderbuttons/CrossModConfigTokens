@@ -3,9 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using ContentPatcher;
-using ContentPatcher.Framework;
 using CrossModCompatibilityTokens.Helpers;
+using CrossModCompatibilityTokens.Integration;
 using HarmonyLib;
 using Newtonsoft.Json.Linq;
 using StardewModdingAPI;
@@ -62,15 +61,16 @@ namespace CrossModCompatibilityTokens
         
         private void OnUpdateTicked(object? sender, UpdateTickedEventArgs e)
         {
-            if (ContentPatcherAPI is not { IsConditionsApiReady: true }) return;
+            if (ContentPatcherAPI is not null and not { IsConditionsApiReady: true }) return;
             GrabTokenManager();
             Helper.Events.GameLoop.UpdateTicked -= this.OnUpdateTicked;
         }
 
         private static void GrabTokenManager()
         {
-            var cpType = typeof(ContentPatcherAPI).Assembly.GetType("ContentPatcher.ModEntry");
             var cpMod = ModList["Pathoschild.ContentPatcher"];
+            var cpType = cpMod.GetType();//.Assembly.GetType("ContentPatcher.ModEntry");
+            Log.Debug(cpType);
             var PerScreenManager = AccessTools.Field(cpType, "ScreenManager").GetValue(cpMod);
             var screenManager = AccessTools.Property(PerScreenManager!.GetType(), "Value").GetValue(PerScreenManager);
             TokenManager = AccessTools.Property(screenManager?.GetType(), "TokenManager")?.GetValue(screenManager);

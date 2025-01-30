@@ -7,6 +7,6 @@
     "EntryDll": "CrossModCompatibilityTokens.dll",
     "UpdateKeys": [ "Nexus:28284" ],
     "Dependencies": [
-        { "UniqueID": "Pathoschild.ContentPatcher", "IsRequired": true }
+        { "UniqueID": "Pathoschild.ContentPatcher", "IsRequired": false }
     ]
 }

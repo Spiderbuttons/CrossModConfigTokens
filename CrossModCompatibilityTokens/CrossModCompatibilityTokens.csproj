@@ -4,7 +4,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <LangVersion>Latest</LangVersion>
         <GamePath>C:\Program Files (x86)\Steam\steamapps\common\Stardew Valley</GamePath>
-        <GameModsPath>$(GamePath)\ModsDebug</GameModsPath>
+        <GameModsPath>$(GamePath)\ModsMinimal</GameModsPath>
         <EnableHarmony>true</EnableHarmony>
         <EnableModDeploy>true</EnableModDeploy>
         <EnableModZip>true</EnableModZip>
@@ -17,24 +17,14 @@
         <OutputPath>bin\Debug</OutputPath>
     </PropertyGroup>
 
-
     <ItemGroup>
+        <PackageReference Include="Krafs.Publicizer" Version="2.2.1">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <Publicize Include="StardewModdingAPI" />
+        <Reference Include="Newtonsoft.Json" Private="False">
+            <HintPath>$(GamePath)\smapi-internal\Newtonsoft.Json.dll</HintPath>
+        </Reference>
         <PackageReference Include="Pathoschild.Stardew.ModBuildConfig" Version="4.1.1"/>
     </ItemGroup>
-
-
-    <ItemGroup>
-      <Reference Include="Newtonsoft.Json" Private="False">
-        <HintPath>$(GamePath)\smapi-internal\Newtonsoft.Json.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Reference Include="ContentPatcher" HintPath="$(GameModsPath)\ContentPatcher\ContentPatcher.dll" Private="False" />
-    </ItemGroup>
-
-
-    <PropertyGroup>
-        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    </PropertyGroup>
 </Project>
