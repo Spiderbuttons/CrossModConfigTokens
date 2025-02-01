@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using CrossModCompatibilityTokens.Helpers;
 using CrossModCompatibilityTokens.Integration;
@@ -9,6 +10,7 @@ using HarmonyLib;
 using Newtonsoft.Json.Linq;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using CrossModCompatibilityTokens.Tokens;
 
 namespace CrossModCompatibilityTokens
 {
@@ -16,6 +18,8 @@ namespace CrossModCompatibilityTokens
     internal sealed class ModEntry : Mod
     {
         internal static IMonitor ModMonitor { get; private set; } = null!;
+        
+        internal static IModHelper ModHelper { get; private set; } = null!;
         
         internal static IManifest Manifest { get; private set; } = null!;
 
@@ -33,6 +37,7 @@ namespace CrossModCompatibilityTokens
         public override void Entry(IModHelper helper)
         {
             ModMonitor = Monitor;
+            ModHelper = helper;
             Manifest = ModManifest;
 
             var SCore = typeof(Mod).Assembly.GetType("StardewModdingAPI.Framework.SCore")!.GetProperty("Instance",
@@ -41,6 +46,21 @@ namespace CrossModCompatibilityTokens
             
             Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
             Helper.Events.GameLoop.UpdateTicked += this.OnUpdateTicked;
+            Helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        }
+
+        private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
+        {
+            if (e.Button is SButton.F2)
+            {
+                if (!Registrar.TryGetContentPack(Helper.ModRegistry.GetAll().First(p => p.IsContentPack), out IContentPack? val, out string? error))
+                {
+                    Log.Error(error);
+                    return;
+                }
+
+                Log.Alert(val.Manifest.UniqueID);
+            }
         }
 
         private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
@@ -173,28 +193,6 @@ namespace CrossModCompatibilityTokens
             catch (Exception e)
             {
                 Log.Error($"Error grabbing config for {uniqueID}: {e}");
-            }
-
-            return null;
-        }
-
-        public static ITranslationHelper? GrabTranslationHelper(string uniqueID)
-        {
-            try
-            {
-                if (ModList.TryGetValue(uniqueID, out var mod))
-                {
-                    return mod.Helper.Translation;
-                }
-
-                if (PackList.TryGetValue(uniqueID, out var pack))
-                {
-                    return pack.Translation;
-                }
-            }
-            catch (Exception e)
-            {
-                Log.Error($"Error grabbing translation helper for {uniqueID}: {e}");
             }
 
             return null;
