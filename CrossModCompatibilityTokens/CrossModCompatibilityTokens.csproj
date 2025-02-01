@@ -12,6 +12,7 @@
         <Title>CrossModCompatibilityTokens</Title>
         <Authors>Spiderbuttons</Authors>
         <PackageId>CrossModCompatibilityTokens</PackageId>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <OutputPath>bin\Debug</OutputPath>
