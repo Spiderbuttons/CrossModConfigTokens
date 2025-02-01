@@ -59,6 +59,11 @@ public static class Registrar
         error = $"{uniqueId} is a content pack.";
         return false;
     }
+    
+    public static bool TryGetMod(IModInfo modInfo, [NotNullWhen(true)] out IMod? mod, out string? error)
+    {
+        return TryGetMod(modInfo.Manifest.UniqueID, out mod, out error);
+    }
 
     public static bool TryGetContentPack(string uniqueId, [NotNullWhen(true)] out IContentPack? pack, out string? error)
     {
@@ -78,6 +83,11 @@ public static class Registrar
         error = $"{uniqueId} is not a content pack!";
         return false;
     }
+    
+    public static bool TryGetContentPack(IModInfo modInfo, [NotNullWhen(true)] out IContentPack? pack, out string? error)
+    {
+        return TryGetContentPack(modInfo.Manifest.UniqueID, out pack, out error);
+    }
 
     public static bool TryGetModHelper(string uniqueId, [NotNullWhen(true)] out IModHelper? helper, out string? error)
     {
@@ -91,6 +101,11 @@ public static class Registrar
         helper = mod.Helper;
         return true;
     }
+    
+    public static bool TryGetModHelper(IModInfo modInfo, [NotNullWhen(true)] out IModHelper? helper, out string? error)
+    {
+        return TryGetModHelper(modInfo.Manifest.UniqueID, out helper, out error);
+    }
 
     public static bool TryGetModAssembly(string uniqueId, [NotNullWhen(true)] out Assembly? assembly, out string? error)
     {
@@ -103,5 +118,10 @@ public static class Registrar
 
         assembly = mod.GetType().Assembly;
         return true;
+    }
+    
+    public static bool TryGetModAssembly(IModInfo modInfo, [NotNullWhen(true)] out Assembly? assembly, out string? error)
+    {
+        return TryGetModAssembly(modInfo.Manifest.UniqueID, out assembly, out error);
     }
 }
