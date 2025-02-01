@@ -19,7 +19,6 @@ namespace CrossModCompatibilityTokens.Tokens
          ** Fields
          *********/
         private Dictionary<string, ITranslationHelper> TransCache = new();
-        private ITranslationHelper? TranslationHelper;
         private LocalizedContentManager.LanguageCode LastLocale;
 
         public TranslationToken()
@@ -66,11 +65,6 @@ namespace CrossModCompatibilityTokens.Tokens
         public bool TryValidateInput(string? input, [NotNullWhen(false)] out string? error)
         {
             string[] split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ?? [];
-            if (split.Length != 2)
-            {
-                error = "Expected two arguments.";
-                return false;
-            }
             
             if (!Registrar.TryGetModMetadata(split[0], out var _, out error))
             {
@@ -96,12 +90,6 @@ namespace CrossModCompatibilityTokens.Tokens
             
             LastLocale = ModEntry.ModHelper.Translation.LocaleEnum;
             return true;
-            
-            // if (this.TranslationHelper is null) return true;
-            // if (this.TranslationHelper.LocaleEnum == this.LastLocale) return false;
-            //
-            // this.LastLocale = this.TranslationHelper.LocaleEnum;
-            // return true;
         }
 
         /// <summary>Get whether the token is available for use.</summary>
@@ -116,15 +104,23 @@ namespace CrossModCompatibilityTokens.Tokens
         {
             if (input is null) yield break;
             var split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ?? [];
-            if (split.Length != 2)
+            
+            // split[2], split[3], split[4] and onward are all key value pairs separated by spaces
+            // example: keyName value, key2 value2, key3 value3
+            // so we need to turn these into dictionary entries so the Translator can use em for tokens
+            var dict = new Dictionary<string, string>();
+            foreach (var kvp in split.Skip(2))
             {
-                yield break;
+                var kvpSplit = kvp.Split(' ', 2);
+                if (kvpSplit.Length != 2) continue;
+                dict[kvpSplit[0]] = kvpSplit[1];
+                Log.Warn($"Key '{kvpSplit[0]}' with value '{kvpSplit[1]}'");
             }
 
             var uniqueID = split[0];
             if (TransCache.TryGetValue(uniqueID, out var translator))
             {
-                yield return translator.Get(split[1]);
+                yield return translator.Get(split[1], dict);
             }
         }
     }
