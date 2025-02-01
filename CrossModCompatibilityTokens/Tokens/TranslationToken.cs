@@ -64,7 +64,7 @@ namespace CrossModCompatibilityTokens.Tokens
             
             if (!Registrar.TryGetModMetadata(split[0], out var _, out error))
             {
-                error = $"Mod or Content Pack '{split[0]}' not found.";
+                error = $"[Spiderbuttons.CMCT/Translation] Mod or Content Pack '{split[0]}' not found.";
                 return false;
             }
 
