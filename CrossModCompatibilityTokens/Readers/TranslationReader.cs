@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 using StardewModdingAPI;
 using StardewValley.Extensions;
 
-namespace CrossModCompatibilityTokens;
+namespace CrossModCompatibilityTokens.Readers;
 
 public static class TranslationReader
 {

@@ -1,31 +1,27 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CrossModCompatibilityTokens.Helpers;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
+using CrossModCompatibilityTokens.Readers;
 using StardewModdingAPI;
 using StardewValley;
 
 namespace CrossModCompatibilityTokens.Tokens
 {
-    /// <summary>Method delegates which represent a simplified version of <see cref="IValueProvider"/> that can be implemented by custom mod tokens through the API via <see cref="ConventionValueProvider"/>.</summary>
-    /// <remarks>Methods should be kept in sync with <see cref="ConventionWrapper"/>.</remarks>
     internal class TranslationToken
     {
         /*********
          ** Fields
          *********/
-        private Dictionary<string, ITranslationHelper> TransCache = new();
+        private readonly Dictionary<string, ITranslationHelper> TransCache = new();
         private LocalizedContentManager.LanguageCode LastLocale;
 
         public TranslationToken()
         {
             foreach (var mod in ModEntry.ModHelper.ModRegistry.GetAll())
             {
-                if (TranslationReader.TryGetModTranslator(mod, out var translator, out var error))
+                if (TranslationReader.TryGetModTranslator(mod, out var translator, out _))
                 {
                     TransCache[mod.Manifest.UniqueID] = translator;
                 }
@@ -103,7 +99,7 @@ namespace CrossModCompatibilityTokens.Tokens
         public IEnumerable<string> GetValues(string? input)
         {
             if (input is null) yield break;
-            var split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ?? [];
+            var split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray();
             
             // split[2], split[3], split[4] and onward are all key value pairs separated by spaces
             // example: keyName value, key2 value2, key3 value3

@@ -5,7 +5,7 @@ using StardewModdingAPI;
 using StardewModdingAPI.Framework;
 using StardewValley.Extensions;
 
-namespace CrossModCompatibilityTokens;
+namespace CrossModCompatibilityTokens.Readers;
 
 public static class ConfigReader
 {
