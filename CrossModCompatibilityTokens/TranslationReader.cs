@@ -1,0 +1,53 @@
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection.Metadata.Ecma335;
+using CrossModCompatibilityTokens.Helpers;
+using Newtonsoft.Json.Linq;
+using StardewModdingAPI;
+using StardewValley.Extensions;
+
+namespace CrossModCompatibilityTokens;
+
+public static class TranslationReader
+{
+    public static bool TryGetTranslator(string uniqueId, [NotNullWhen(true)] out ITranslationHelper? translator, out string? error)
+    {
+        translator = null;
+        error = null;
+        if (!Registrar.TryGetModMetadata(uniqueId, out var metadata, out error))
+        {
+            return false;
+        }
+
+        translator = metadata.Translations!;
+        return true;
+    }
+    
+    public static bool TryGetTranslation(string uniqueId, string key, object? tokens, out string? value, out string? error)
+    {
+        value = null;
+        error = null;
+        if (!TryGetTranslator(uniqueId, out var translator, out error))
+        {
+            return false;
+        }
+
+        var trans = translator.Get(key, tokens);
+        if (trans.HasValue())
+        {
+            value = trans;
+            return true;
+        }
+        
+        error = $"Failed to get translation for key '{key}' from mod '{uniqueId}'";
+        value = null;
+        return false;
+    }
+
+    public static bool TryGetTranslation(string id, string key, out string? value, out string? error)
+    {
+        value = null;
+        error = null;
+        return TryGetTranslation(id, key, null, out value, out error);
+    }
+}
