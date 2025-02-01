@@ -3,27 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using CrossModCompatibilityTokens.Helpers;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using StardewModdingAPI;
-using StardewValley;
 
-namespace CrossModCompatibilityTokens
+namespace CrossModCompatibilityTokens.Tokens
 {
-    /// <summary>Method delegates which represent a simplified version of <see cref="IValueProvider"/> that can be implemented by custom mod tokens through the API via <see cref="ConventionValueProvider"/>.</summary>
-    /// <remarks>Methods should be kept in sync with <see cref="ConventionWrapper"/>.</remarks>
-    internal class TranslationToken
+    internal class AssetToken
     {
-        /*********
-         ** Fields
-         *********/
-        private ITranslationHelper? TranslationHelper;
-        private LocalizedContentManager.LanguageCode LastLocale;
-
-        /****
-         ** Metadata
-         ****/
+        private readonly Dictionary<string, Dictionary<string, IAssetName?>> cachedAssetNames = new();
+        
         /// <summary>Get whether the token allows input arguments (e.g. an NPC name for a relationship token).</summary>
         /// <remarks>Default false.</remarks>
         public bool AllowsInput()
@@ -69,25 +56,32 @@ namespace CrossModCompatibilityTokens
             error = null;
             return true;
         }
-
-        /****
-         ** State
-         ****/
+        
         /// <summary>Update the values when the context changes.</summary>
         /// <returns>Returns whether the value changed, which may trigger patch updates.</returns>
         public bool UpdateContext()
         {
-            if (this.TranslationHelper is null) return true;
-            if (this.TranslationHelper.LocaleEnum == this.LastLocale) return false;
+            var shouldUpdate = false;
+            foreach (var modAsset in cachedAssetNames)
+            {
+                foreach (var (key, oldAssetName) in modAsset.Value)
+                {
+                    var newAssetName = ModEntry.GrabInternalAssetName(modAsset.Key, key);
+                    
+                    if (oldAssetName == newAssetName) continue;
+                    
+                    cachedAssetNames[modAsset.Key][key] = newAssetName;
+                    shouldUpdate = true;
+                }
+            }
             
-            this.LastLocale = this.TranslationHelper.LocaleEnum;
-            return true;
+            return shouldUpdate;
         }
 
         /// <summary>Get whether the token is available for use.</summary>
         public bool IsReady()
         {
-            return true;
+            return ModEntry.ModList.Any() || ModEntry.PackList.Any();
         }
 
         /// <summary>Get the current values.</summary>
@@ -95,17 +89,32 @@ namespace CrossModCompatibilityTokens
         public IEnumerable<string> GetValues(string? input)
         {
             if (input is null) yield break;
-            var split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ?? [];
+            var split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray();
             if (split.Length != 2)
             {
                 yield break;
             }
 
             var uniqueID = split[0];
-            TranslationHelper = ModEntry.GrabTranslationHelper(uniqueID);
-            if (TranslationHelper is null) yield break;
-
-            yield return TranslationHelper.Get(split[1]);
+            var assetPath = split[1];
+            if (!cachedAssetNames.ContainsKey(uniqueID))
+            {
+                cachedAssetNames.Add(uniqueID, new Dictionary<string, IAssetName?>());
+            }
+            
+            if (!cachedAssetNames[uniqueID].ContainsKey(assetPath))
+            {
+                cachedAssetNames[uniqueID].Add(assetPath, ModEntry.GrabInternalAssetName(uniqueID, assetPath));
+            }
+            
+            var assetName = cachedAssetNames[uniqueID][assetPath];
+            
+            if (assetName is null) yield break;
+            
+            foreach (var value in assetName.Name.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()))
+            {
+                yield return value;
+            }
         }
     }
 }

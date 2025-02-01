@@ -3,16 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using HarmonyLib;
+using CrossModCompatibilityTokens.Helpers;
+using Newtonsoft.Json.Linq;
 
-namespace CrossModCompatibilityTokens
+namespace CrossModCompatibilityTokens.Tokens
 {
-    internal class DynamicToken
+    internal class ConfigToken
     {
-        private object? dynamicTokenManager;
-        private readonly object emptyInputArgs =
-            Activator.CreateInstance(AccessTools.TypeByName("ContentPatcher.Framework.Tokens.EmptyInputArguments"),
-                new object[] { })!;
+        private readonly Dictionary<string, Dictionary<string, string?>> cachedValues = new();
+        private bool shouldUpdate = false;
 
         /// <summary>Get whether the token allows input arguments (e.g. an NPC name for a relationship token).</summary>
         /// <remarks>Default false.</remarks>
@@ -65,14 +64,31 @@ namespace CrossModCompatibilityTokens
         /// <returns>Returns whether the value changed, which may trigger patch updates.</returns>
         public bool UpdateContext()
         {
-            return true; // I'm sorry. It's the only way.
+            if (shouldUpdate)
+            {
+                shouldUpdate = false;
+                return true;
+            }
+            
+            foreach (var modConfig in cachedValues)
+            {
+                foreach (var (key, oldConfigValue) in modConfig.Value)
+                {
+                    var newConfigValue = ModEntry.GrabConfigValue(modConfig.Key, key)?.Value<string>();
+                    if (oldConfigValue == newConfigValue) continue;
+
+                    cachedValues[modConfig.Key][key] = newConfigValue;
+                    shouldUpdate = true;
+                }
+            }
+            
+            return shouldUpdate;
         }
 
         /// <summary>Get whether the token is available for use.</summary>
         public bool IsReady()
         {
-            return ModEntry.ContentPatcherAPI != null && (ModEntry.ModList.Any() || ModEntry.PackList.Any()) &&
-                   ModEntry.ContentPatcherAPI.IsConditionsApiReady;
+            return ModEntry.ModList.Any() || ModEntry.PackList.Any();
         }
 
         /// <summary>Get the current values.</summary>
@@ -87,16 +103,28 @@ namespace CrossModCompatibilityTokens
             }
 
             var uniqueID = split[0];
-            var dynamicTokenKey = split[1];
+            var configKey = split[1];
+            if (!cachedValues.ContainsKey(uniqueID))
+            {
+                cachedValues.Add(uniqueID, new Dictionary<string, string?>());
+                shouldUpdate = true;
+            }
 
-            dynamicTokenManager = ModEntry.GrabDynamicToken(uniqueID, dynamicTokenKey);
-            if (dynamicTokenManager is null) yield break;
+            if (!cachedValues[uniqueID].ContainsKey(configKey))
+            {
+                cachedValues[uniqueID].Add(configKey, ModEntry.GrabConfigValue(uniqueID, configKey)?.Value<string>());
+                shouldUpdate = true;
+            }
 
-            var values = AccessTools.Method(dynamicTokenManager!.GetType(), "GetValues")
-                .Invoke(dynamicTokenManager, new object[] { emptyInputArgs });
-            if (values is null) yield break;
+            var valueCheck = ModEntry.GrabConfigValue(uniqueID, configKey)?.Value<string>();
+            if (cachedValues[uniqueID][configKey] != valueCheck)
+            {
+                shouldUpdate = true;
+            }
 
-            foreach (var value in (values as IEnumerable<string>)!)
+            var configValue = cachedValues[uniqueID][configKey];
+
+            foreach (var value in configValue?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim())!)
             {
                 yield return value;
             }

@@ -5,14 +5,37 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CrossModCompatibilityTokens.Helpers;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
+using StardewModdingAPI;
+using StardewValley;
 
-namespace CrossModCompatibilityTokens
+namespace CrossModCompatibilityTokens.Tokens
 {
-    internal class ConfigToken
+    /// <summary>Method delegates which represent a simplified version of <see cref="IValueProvider"/> that can be implemented by custom mod tokens through the API via <see cref="ConventionValueProvider"/>.</summary>
+    /// <remarks>Methods should be kept in sync with <see cref="ConventionWrapper"/>.</remarks>
+    internal class TranslationToken
     {
-        private readonly Dictionary<string, Dictionary<string, string?>> cachedValues = new();
-        private bool shouldUpdate = false;
+        /*********
+         ** Fields
+         *********/
+        private Dictionary<string, ITranslationHelper> TransCache = new();
+        private ITranslationHelper? TranslationHelper;
+        private LocalizedContentManager.LanguageCode LastLocale;
 
+        public TranslationToken()
+        {
+            foreach (var mod in ModEntry.ModHelper.ModRegistry.GetAll())
+            {
+                if (TranslationReader.TryGetModTranslator(mod, out var translator, out var error))
+                {
+                    TransCache[mod.Manifest.UniqueID] = translator;
+                }
+            }
+        }
+
+        /****
+         ** Metadata
+         ****/
         /// <summary>Get whether the token allows input arguments (e.g. an NPC name for a relationship token).</summary>
         /// <remarks>Default false.</remarks>
         public bool AllowsInput()
@@ -32,7 +55,7 @@ namespace CrossModCompatibilityTokens
         /// <remarks>Default true.</remarks>
         public bool CanHaveMultipleValues(string? input = null)
         {
-            return true;
+            return false;
         }
 
         /// <summary>Validate that the provided input arguments are valid.</summary>
@@ -42,17 +65,16 @@ namespace CrossModCompatibilityTokens
         /// <remarks>Default true.</remarks>
         public bool TryValidateInput(string? input, [NotNullWhen(false)] out string? error)
         {
-            string[] split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ??
-                             [];
+            string[] split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ?? [];
             if (split.Length != 2)
             {
                 error = "Expected two arguments.";
                 return false;
             }
-
-            if (!ModEntry.ModList.ContainsKey(split[0]) && !ModEntry.PackList.ContainsKey(split[0]))
+            
+            if (!Registrar.TryGetModMetadata(split[0], out var _, out error))
             {
-                error = "Mod or pack not found.";
+                error = $"Mod or Content Pack '{split[0]}' not found.";
                 return false;
             }
 
@@ -60,35 +82,32 @@ namespace CrossModCompatibilityTokens
             return true;
         }
 
+        /****
+         ** State
+         ****/
         /// <summary>Update the values when the context changes.</summary>
         /// <returns>Returns whether the value changed, which may trigger patch updates.</returns>
         public bool UpdateContext()
         {
-            if (shouldUpdate)
+            if (LastLocale == ModEntry.ModHelper.Translation.LocaleEnum)
             {
-                shouldUpdate = false;
-                return true;
+                return false;
             }
             
-            foreach (var modConfig in cachedValues)
-            {
-                foreach (var (key, oldConfigValue) in modConfig.Value)
-                {
-                    var newConfigValue = ModEntry.GrabConfigValue(modConfig.Key, key)?.Value<string>();
-                    if (oldConfigValue == newConfigValue) continue;
-
-                    cachedValues[modConfig.Key][key] = newConfigValue;
-                    shouldUpdate = true;
-                }
-            }
+            LastLocale = ModEntry.ModHelper.Translation.LocaleEnum;
+            return true;
             
-            return shouldUpdate;
+            // if (this.TranslationHelper is null) return true;
+            // if (this.TranslationHelper.LocaleEnum == this.LastLocale) return false;
+            //
+            // this.LastLocale = this.TranslationHelper.LocaleEnum;
+            // return true;
         }
 
         /// <summary>Get whether the token is available for use.</summary>
         public bool IsReady()
         {
-            return ModEntry.ModList.Any() || ModEntry.PackList.Any();
+            return true;
         }
 
         /// <summary>Get the current values.</summary>
@@ -96,37 +115,16 @@ namespace CrossModCompatibilityTokens
         public IEnumerable<string> GetValues(string? input)
         {
             if (input is null) yield break;
-            var split = input.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray();
+            var split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ?? [];
             if (split.Length != 2)
             {
                 yield break;
             }
 
             var uniqueID = split[0];
-            var configKey = split[1];
-            if (!cachedValues.ContainsKey(uniqueID))
+            if (TransCache.TryGetValue(uniqueID, out var translator))
             {
-                cachedValues.Add(uniqueID, new Dictionary<string, string?>());
-                shouldUpdate = true;
-            }
-
-            if (!cachedValues[uniqueID].ContainsKey(configKey))
-            {
-                cachedValues[uniqueID].Add(configKey, ModEntry.GrabConfigValue(uniqueID, configKey)?.Value<string>());
-                shouldUpdate = true;
-            }
-
-            var valueCheck = ModEntry.GrabConfigValue(uniqueID, configKey)?.Value<string>();
-            if (cachedValues[uniqueID][configKey] != valueCheck)
-            {
-                shouldUpdate = true;
-            }
-
-            var configValue = cachedValues[uniqueID][configKey];
-
-            foreach (var value in configValue?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim())!)
-            {
-                yield return value;
+                yield return translator.Get(split[1]);
             }
         }
     }
