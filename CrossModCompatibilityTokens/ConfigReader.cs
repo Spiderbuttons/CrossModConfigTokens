@@ -9,7 +9,7 @@ namespace CrossModCompatibilityTokens;
 
 public static class ConfigReader
 {
-    public static bool TryGetConfig(string uniqueId, out JObject? config, out string? error)
+    public static bool TryGetModConfig(string uniqueId, out JObject? config, out string? error)
     {
         config = null;
         error = null;
@@ -46,11 +46,11 @@ public static class ConfigReader
         return false;
     }
     
-    public static bool TryGetConfigValue<T>(string uniqueId, string key, out T? value, out string? error)
+    public static bool TryGetModConfigValue<T>(string uniqueId, string key, out T? value, out string? error)
     {
         value = default;
         error = null;
-        if (!TryGetConfig(uniqueId, out var config, out error))
+        if (!TryGetModConfig(uniqueId, out var config, out error))
         {
             return false;
         }
