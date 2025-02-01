@@ -9,11 +9,11 @@ namespace CrossModCompatibilityTokens;
 
 public static class ConfigReader
 {
-    public static bool TryGetModConfig(string id, out JObject? config, out string? error)
+    public static bool TryGetConfig(string uniqueId, out JObject? config, out string? error)
     {
         config = null;
         error = null;
-        if (!Registrar.TryGetModMetadata(id, out var metadata, out error))
+        if (!Registrar.TryGetModMetadata(uniqueId, out var metadata, out error))
         {
             return false;
         }
@@ -30,34 +30,34 @@ public static class ConfigReader
             }
             else
             {
-                if (Registrar.TryGetMod(id, out var mod, out error))
+                if (Registrar.TryGetMod(uniqueId, out var mod, out error))
                 {
                     config = mod.Helper.ModContent.Load<JObject>("config.json");
                     return true;
                 }
             }
         }
-        catch (Exception _)
+        catch (Exception)
         {
-            error = $"Mod with UniqueID '{id}' does not have a config!";
+            error = $"Mod with UniqueID '{uniqueId}' does not have a config!";
             return false;
         }
 
         return false;
     }
     
-    public static bool TryGetConfigValue<T>(string id, string key, out T? value, out string? error)
+    public static bool TryGetConfigValue<T>(string uniqueId, string key, out T? value, out string? error)
     {
         value = default;
         error = null;
-        if (!TryGetModConfig(id, out var config, out error))
+        if (!TryGetConfig(uniqueId, out var config, out error))
         {
             return false;
         }
 
         if (config is null)
         {
-            error = $"Mod with UniqueID '{id}' does not have a config!";
+            error = $"Mod with UniqueID '{uniqueId}' does not have a config!";
             return false;
         }
 
@@ -69,7 +69,7 @@ public static class ConfigReader
         {
             if (currentValue is not JObject currentObject)
             {
-                Log.Warn($"Config schema from '{id}' does not have a config matching '{key}'!");
+                Log.Warn($"Config schema from '{uniqueId}' does not have a config matching '{key}'!");
                 return false;
             }
             currentValue = currentObject.GetValue(keySplit[i]);
@@ -78,7 +78,7 @@ public static class ConfigReader
         tryParse:
         if (currentValue is null)
         {
-            error = $"Config schema from '{id}' does not have a config matching '{key}'!";
+            error = $"Config schema from '{uniqueId}' does not have a config matching '{key}'!";
             return false;
         }
         
@@ -86,11 +86,10 @@ public static class ConfigReader
         {
             if (typeof(T).GetMethod("Parse") is { } parseMethod && parseMethod.GetParameters()[0].ParameterType.Name.EqualsIgnoreCase("string"))
             {
-                Log.Alert("Fgfghf");
                 var result = parseMethod.Invoke(null, new object?[] { currentValue.ToString() });
                 if (result is null or false)
                 {
-                    error = $"Failed to parse value of key '{key}' in {id}'s config as type {typeof(T)}.";
+                    error = $"Failed to parse value of key '{key}' in {uniqueId}'s config as type {typeof(T)}.";
                     return false;
                 }
             
@@ -100,12 +99,11 @@ public static class ConfigReader
             
             if (typeof(T).GetMethod("TryParse") is { } tryParseMethod && tryParseMethod.GetParameters()[0].ParameterType.Name.EqualsIgnoreCase("string"))
             {
-                Log.Alert("Found tryP");
                 object?[] args = { currentValue.ToString(), default, default };
                 var result = tryParseMethod.Invoke(null, args);
                 if (result is null or false)
                 {
-                    error = $"Failed to parse value of key '{key}' in {id}'s config as type {typeof(T)}.";
+                    error = $"Failed to parse value of key '{key}' in {uniqueId}'s config as type {typeof(T)}.";
                     return false;
                 }
             
@@ -117,7 +115,7 @@ public static class ConfigReader
         }
         catch (Exception e)
         {
-            error = $"Error casting value of key '{key}' in {id}'s config to type {typeof(T)}: {e}";
+            error = $"Error casting value of key '{key}' in {uniqueId}'s config to type {typeof(T)}: {e}";
             return false;
         }
     }
