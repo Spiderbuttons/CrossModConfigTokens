@@ -10,7 +10,7 @@ namespace CrossModCompatibilityTokens;
 
 public static class TranslationReader
 {
-    public static bool TryGetTranslator(string uniqueId, [NotNullWhen(true)] out ITranslationHelper? translator, out string? error)
+    public static bool TryGetModTranslator(string uniqueId, [NotNullWhen(true)] out ITranslationHelper? translator, out string? error)
     {
         translator = null;
         error = null;
@@ -23,11 +23,16 @@ public static class TranslationReader
         return true;
     }
     
-    public static bool TryGetTranslation(string uniqueId, string key, object? tokens, out string? value, out string? error)
+    public static bool TryGetModTranslator(IModInfo mod, [NotNullWhen(true)] out ITranslationHelper? translator, out string? error)
+    {
+        return TryGetModTranslator(mod.Manifest.UniqueID, out translator, out error);
+    }
+    
+    public static bool TryGetModTranslation(string uniqueId, string key, object? tokens, out string? value, out string? error)
     {
         value = null;
         error = null;
-        if (!TryGetTranslator(uniqueId, out var translator, out error))
+        if (!TryGetModTranslator(uniqueId, out var translator, out error))
         {
             return false;
         }
@@ -44,10 +49,10 @@ public static class TranslationReader
         return false;
     }
 
-    public static bool TryGetTranslation(string id, string key, out string? value, out string? error)
+    public static bool TryGetModTranslation(string id, string key, out string? value, out string? error)
     {
         value = null;
         error = null;
-        return TryGetTranslation(id, key, null, out value, out error);
+        return TryGetModTranslation(id, key, null, out value, out error);
     }
 }
