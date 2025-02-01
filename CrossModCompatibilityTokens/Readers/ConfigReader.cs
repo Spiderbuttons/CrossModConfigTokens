@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using CrossModCompatibilityTokens.Helpers;
 using Newtonsoft.Json.Linq;
 using StardewModdingAPI;
@@ -9,7 +11,45 @@ namespace CrossModCompatibilityTokens.Readers;
 
 public static class ConfigReader
 {
-    public static bool TryGetModConfig(string uniqueId, out JObject? config, out string? error)
+    public class ModConfigManager(string uniqueId)
+    {
+        private string ModId { get; } = uniqueId;
+        private Dictionary<string, object> Cache { get; } = new();
+
+        public bool TryGetConfig<T>(string key, out T? config, out string? error)
+        {
+            error = null;
+            config = default;
+            if (Cache.TryGetValue(key, out var value))
+            {
+                config = (T)value;
+                return true;
+            }
+            
+            if (TryGetConfigNoCache(key, out config, out error))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool TryGetConfigNoCache<T>(string key, out T? config, out string? error)
+        {
+            error = null;
+            config = default;
+            if (TryGetModConfigValue(ModId, key, out T? value, out error))
+            {
+                Cache[key] = value;
+                config = value;
+                return true;
+            }
+            
+            return false;
+        }
+    }
+    
+    public static bool TryGetModConfig(string uniqueId, [NotNullWhen(true)] out JObject? config, out string? error)
     {
         config = null;
         error = null;
@@ -24,8 +64,14 @@ public static class ConfigReader
             {
                 if (Registrar.TryGetContentPack(metadata.Manifest.UniqueID, out var pack, out error))
                 {
-                    config = pack.ReadJsonFile<JObject>("config.json");
-                    return true;
+                    if (pack.HasFile("config.json"))
+                    {
+                        config = pack.ReadJsonFile<JObject>("config.json")!;
+                        return true;
+                    }
+
+                    error = $"Content pack '{metadata.Manifest.UniqueID}' does not have a config!";
+                    return false;
                 }
             }
             else
@@ -46,18 +92,12 @@ public static class ConfigReader
         return false;
     }
     
-    public static bool TryGetModConfigValue<T>(string uniqueId, string key, out T? value, out string? error)
+    public static bool TryGetModConfigValue<T>(string uniqueId, string key, [NotNullWhen(true)] out T? value, out string? error)
     {
         value = default;
         error = null;
         if (!TryGetModConfig(uniqueId, out var config, out error))
         {
-            return false;
-        }
-
-        if (config is null)
-        {
-            error = $"Mod with UniqueID '{uniqueId}' does not have a config!";
             return false;
         }
 
