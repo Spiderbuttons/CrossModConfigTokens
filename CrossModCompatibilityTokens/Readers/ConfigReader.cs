@@ -16,7 +16,7 @@ public static class ConfigReader
         private string ModId { get; } = uniqueId;
         private Dictionary<string, object> Cache { get; } = new();
 
-        public bool TryGetConfig<T>(string key, out T? config, out string? error)
+        public bool TryGetConfig<T>(string key, [NotNullWhen(true)] out T? config, out string? error)
         {
             error = null;
             config = default;
@@ -28,7 +28,7 @@ public static class ConfigReader
 
         }
 
-        public bool TryGetConfigNoCache<T>(string key, out T? config, out string? error)
+        public bool TryGetConfigNoCache<T>(string key, [NotNullWhen(true)] out T? config, out string? error)
         {
             error = null;
             config = default;
@@ -38,6 +38,11 @@ public static class ConfigReader
             Cache[key] = value;
             config = value;
             return true;
+        }
+        
+        public IEnumerable<string> GetCachedKeys()
+        {
+            return Cache.Keys;
         }
     }
     
@@ -80,6 +85,11 @@ public static class ConfigReader
         }
 
         return false;
+    }
+    
+    public static bool TryGetModConfig(IModInfo mod, [NotNullWhen(true)] out JObject? config, out string? error)
+    {
+        return TryGetModConfig(mod.Manifest.UniqueID, out config, out error);
     }
     
     public static bool TryGetModConfigValue<T>(string uniqueId, string key, [NotNullWhen(true)] out T? value, out string? error)

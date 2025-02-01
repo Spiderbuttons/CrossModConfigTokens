@@ -4,14 +4,25 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CrossModCompatibilityTokens.Helpers;
+using CrossModCompatibilityTokens.Readers;
 using Newtonsoft.Json.Linq;
 
 namespace CrossModCompatibilityTokens.Tokens
 {
     internal class ConfigToken
     {
-        private readonly Dictionary<string, Dictionary<string, string?>> cachedValues = new();
-        private bool shouldUpdate = false;
+        private readonly Dictionary<string, ConfigReader.ModConfigManager> ConfigCache = new();
+        
+        public ConfigToken()
+        {
+            foreach (var mod in ModEntry.ModHelper.ModRegistry.GetAll())
+            {
+                if (ConfigReader.TryGetModConfig(mod, out _, out _))
+                {
+                    ConfigCache[mod.Manifest.UniqueID] = new ConfigReader.ModConfigManager(mod.Manifest.UniqueID);
+                }
+            }
+        }
 
         /// <summary>Get whether the token allows input arguments (e.g. an NPC name for a relationship token).</summary>
         /// <remarks>Default false.</remarks>
@@ -32,7 +43,7 @@ namespace CrossModCompatibilityTokens.Tokens
         /// <remarks>Default true.</remarks>
         public bool CanHaveMultipleValues(string? input = null)
         {
-            return true;
+            return false;
         }
 
         /// <summary>Validate that the provided input arguments are valid.</summary>
@@ -46,13 +57,13 @@ namespace CrossModCompatibilityTokens.Tokens
                              [];
             if (split.Length != 2)
             {
-                error = "Expected two arguments.";
+                error = "[Spiderbuttons.CMCT/Config] Expected two input arguments.";
                 return false;
             }
 
             if (!ModEntry.ModList.ContainsKey(split[0]) && !ModEntry.PackList.ContainsKey(split[0]))
             {
-                error = "Mod or pack not found.";
+                error = $"[Spiderbuttons.CMCT/Config] Mod or Content Pack '{split[0]}' not found.";
                 return false;
             }
 
@@ -64,24 +75,18 @@ namespace CrossModCompatibilityTokens.Tokens
         /// <returns>Returns whether the value changed, which may trigger patch updates.</returns>
         public bool UpdateContext()
         {
-            if (shouldUpdate)
+            bool shouldUpdate = false;
+            foreach (var (_, config) in ConfigCache)
             {
-                shouldUpdate = false;
-                return true;
-            }
-            
-            foreach (var modConfig in cachedValues)
-            {
-                foreach (var (key, oldConfigValue) in modConfig.Value)
+                foreach (var cfgKey in config.GetCachedKeys())
                 {
-                    var newConfigValue = ModEntry.GrabConfigValue(modConfig.Key, key)?.Value<string>();
-                    if (oldConfigValue == newConfigValue) continue;
-
-                    cachedValues[modConfig.Key][key] = newConfigValue;
-                    shouldUpdate = true;
+                    if (config.TryGetConfig<string>(cfgKey, out var oldValue, out _) && config.TryGetConfigNoCache<string>(cfgKey, out var newValue, out _))
+                    {
+                        if (oldValue != newValue) shouldUpdate = true;
+                    }
                 }
             }
-            
+
             return shouldUpdate;
         }
 
@@ -102,31 +107,12 @@ namespace CrossModCompatibilityTokens.Tokens
                 yield break;
             }
 
-            var uniqueID = split[0];
+            var uniqueId = split[0];
             var configKey = split[1];
-            if (!cachedValues.ContainsKey(uniqueID))
-            {
-                cachedValues.Add(uniqueID, new Dictionary<string, string?>());
-                shouldUpdate = true;
-            }
 
-            if (!cachedValues[uniqueID].ContainsKey(configKey))
+            if (ConfigCache.TryGetValue(uniqueId, out var modConfig) && modConfig.TryGetConfig<string>(configKey, out var config, out var error))
             {
-                cachedValues[uniqueID].Add(configKey, ModEntry.GrabConfigValue(uniqueID, configKey)?.Value<string>());
-                shouldUpdate = true;
-            }
-
-            var valueCheck = ModEntry.GrabConfigValue(uniqueID, configKey)?.Value<string>();
-            if (cachedValues[uniqueID][configKey] != valueCheck)
-            {
-                shouldUpdate = true;
-            }
-
-            var configValue = cachedValues[uniqueID][configKey];
-
-            foreach (var value in configValue?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim())!)
-            {
-                yield return value;
+                yield return config;
             }
         }
     }
