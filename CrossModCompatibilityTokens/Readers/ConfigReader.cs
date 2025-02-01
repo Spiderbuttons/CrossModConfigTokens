@@ -20,32 +20,24 @@ public static class ConfigReader
         {
             error = null;
             config = default;
-            if (Cache.TryGetValue(key, out var value))
-            {
-                config = (T)value;
-                return true;
-            }
+            if (!Cache.TryGetValue(key, out var value)) 
+                return TryGetConfigNoCache(key, out config, out error);
             
-            if (TryGetConfigNoCache(key, out config, out error))
-            {
-                return true;
-            }
+            config = (T)value;
+            return true;
 
-            return false;
         }
 
         public bool TryGetConfigNoCache<T>(string key, out T? config, out string? error)
         {
             error = null;
             config = default;
-            if (TryGetModConfigValue(ModId, key, out T? value, out error))
-            {
-                Cache[key] = value;
-                config = value;
-                return true;
-            }
+            if (!TryGetModConfigValue(ModId, key, out T? value, out error))
+                return false;
             
-            return false;
+            Cache[key] = value;
+            config = value;
+            return true;
         }
     }
     
@@ -54,9 +46,7 @@ public static class ConfigReader
         config = null;
         error = null;
         if (!Registrar.TryGetModMetadata(uniqueId, out var metadata, out error))
-        {
             return false;
-        }
 
         try
         {
@@ -97,9 +87,7 @@ public static class ConfigReader
         value = default;
         error = null;
         if (!TryGetModConfig(uniqueId, out var config, out error))
-        {
             return false;
-        }
 
         var keySplit = key.Split('.');
         var currentValue = config.GetValue(keySplit[0]);
@@ -139,7 +127,7 @@ public static class ConfigReader
             
             if (typeof(T).GetMethod("TryParse") is { } tryParseMethod && tryParseMethod.GetParameters()[0].ParameterType.Name.EqualsIgnoreCase("string"))
             {
-                object?[] args = { currentValue.ToString(), default, default };
+                object?[] args = [currentValue.ToString(), default, default];
                 var result = tryParseMethod.Invoke(null, args);
                 if (result is null or false)
                 {
@@ -150,7 +138,7 @@ public static class ConfigReader
                 value = (T)args[1]!;
                 return true;
             }
-            value = currentValue.ToObject<T>();
+            value = currentValue.ToObject<T>()!;
             return true;
         }
         catch (Exception e)
