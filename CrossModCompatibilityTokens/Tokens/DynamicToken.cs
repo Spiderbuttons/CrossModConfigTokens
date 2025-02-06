@@ -3,16 +3,27 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using ContentPatcher.Framework;
+using CrossModCompatibilityTokens.Helpers;
+using CrossModCompatibilityTokens.Readers;
 using HarmonyLib;
 
 namespace CrossModCompatibilityTokens.Tokens
 {
     internal class DynamicToken
     {
-        private object? dynamicTokenManager;
-        private readonly object emptyInputArgs =
-            Activator.CreateInstance(AccessTools.TypeByName("ContentPatcher.Framework.Tokens.EmptyInputArguments"),
-                new object[] { })!;
+        private readonly Dictionary<string, DynamicReader.DynamicTokenManager> DynamicCache = new();
+        
+        public DynamicToken()
+        {
+            foreach (var mod in ModEntry.ModHelper.ModRegistry.GetAll())
+            {
+                if (Registrar.TryGetContentPack(mod, out _, out _) && mod.Manifest.ContentPackFor?.UniqueID is "Pathoschild.ContentPatcher")
+                {
+                    DynamicCache[mod.Manifest.UniqueID] = new DynamicReader.DynamicTokenManager(mod.Manifest.UniqueID);
+                }
+            }
+        }
 
         /// <summary>Get whether the token allows input arguments (e.g. an NPC name for a relationship token).</summary>
         /// <remarks>Default false.</remarks>
@@ -47,13 +58,13 @@ namespace CrossModCompatibilityTokens.Tokens
                              [];
             if (split.Length != 2)
             {
-                error = "Expected two arguments.";
+                error = "[Spiderbuttons.CMCT/Dynamic] Expected two input arguments (UniqueID and DynamicToken Name).";
                 return false;
             }
 
-            if (!ModEntry.ModList.ContainsKey(split[0]) && !ModEntry.PackList.ContainsKey(split[0]))
+            if (!Registrar.TryGetContentPack(split[0], out var _, out error))
             {
-                error = "Mod or pack not found.";
+                error = $"[Spiderbuttons.CMCT/Dynamic] Content Patcher content pack '{split[0]}' not found.";
                 return false;
             }
 
@@ -65,14 +76,13 @@ namespace CrossModCompatibilityTokens.Tokens
         /// <returns>Returns whether the value changed, which may trigger patch updates.</returns>
         public bool UpdateContext()
         {
-            return true; // I'm sorry. It's the only way.
+            return true;
         }
 
         /// <summary>Get whether the token is available for use.</summary>
         public bool IsReady()
         {
-            return ModEntry.ContentPatcherAPI != null && (ModEntry.ModList.Any() || ModEntry.PackList.Any()) &&
-                   ModEntry.ContentPatcherAPI.IsConditionsApiReady;
+            return Registrar.AreAllModsLoaded();
         }
 
         /// <summary>Get the current values.</summary>
@@ -86,19 +96,16 @@ namespace CrossModCompatibilityTokens.Tokens
                 yield break;
             }
 
-            var uniqueID = split[0];
-            var dynamicTokenKey = split[1];
+            var uniqueId = split[0];
+            var name = split[1];
 
-            dynamicTokenManager = ModEntry.GrabDynamicToken(uniqueID, dynamicTokenKey);
-            if (dynamicTokenManager is null) yield break;
-
-            var values = AccessTools.Method(dynamicTokenManager!.GetType(), "GetValues")
-                .Invoke(dynamicTokenManager, new object[] { emptyInputArgs });
-            if (values is null) yield break;
-
-            foreach (var value in (values as IEnumerable<string>)!)
+            // Still can't figure out how to do this with a cache. The token is always late by a day if I don't grab it uncached...
+            if (DynamicCache.TryGetValue(uniqueId, out var manager) && manager.TryGetValuesNoCache(name, out var values, out var error))
             {
-                yield return value;
+                foreach (var value in values)
+                {
+                    yield return value;
+                }
             }
         }
     }
