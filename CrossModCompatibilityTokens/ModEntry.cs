@@ -142,62 +142,6 @@ namespace CrossModCompatibilityTokens
             }
         }
 
-        public static JToken? GrabConfigValue(string uniqueID, string? valueToFind)
-        {
-            if (uniqueID.Equals(Manifest.UniqueID)) return null;
-            var config = GrabConfig(uniqueID);
-            if (config == null)
-            {
-                Log.Warn($"Mod with UniqueID '{uniqueID}' does not have any configuration options!");
-                return null;
-            }
-
-            if (valueToFind is null)
-            {
-                Log.Trace("Tried to grab a config value without a value to find! This may happen at startup regardless, but double check your token names just in case.");
-                return null;
-            }
-
-            var valueSplit = valueToFind.Split('.');
-            var currentValue = config.GetValue(valueSplit[0]);
-            
-            if (valueSplit.Length == 1) return currentValue;
-
-            for (var i = 1; i < valueSplit.Length; i++)
-            {
-                if (currentValue is not JObject currentObject)
-                {
-                    Log.Warn($"Config schema from '{uniqueID}' does not have a config matching '{valueToFind}'!");
-                    return null;
-                }
-                currentValue = currentObject.GetValue(valueSplit[i]);
-            }
-
-            return currentValue;
-        }
-
-        private static JObject? GrabConfig(string uniqueID)
-        {
-            try
-            {
-                if (ModList.TryGetValue(uniqueID, out var mod))
-                {
-                    return mod.Helper.ModContent.Load<JObject>("config.json");
-                }
-
-                if (PackList.TryGetValue(uniqueID, out var pack))
-                {
-                    return pack.ReadJsonFile<JObject>("config.json");
-                }
-            }
-            catch (Exception e)
-            {
-                Log.Error($"Error grabbing config for {uniqueID}: {e}");
-            }
-
-            return null;
-        }
-
         public static IAssetName? GrabInternalAssetName(string uniqueID, string path)
         {
             var modContentHelper = GrabModContentHelper(uniqueID);
