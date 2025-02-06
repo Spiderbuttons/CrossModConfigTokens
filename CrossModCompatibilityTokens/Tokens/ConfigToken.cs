@@ -57,7 +57,7 @@ namespace CrossModCompatibilityTokens.Tokens
                              [];
             if (split.Length != 2)
             {
-                error = "[Spiderbuttons.CMCT/Config] Expected two input arguments.";
+                error = "[Spiderbuttons.CMCT/Config] Expected two input arguments (UniqueID and Config Name).";
                 return false;
             }
 
@@ -93,7 +93,7 @@ namespace CrossModCompatibilityTokens.Tokens
         /// <summary>Get whether the token is available for use.</summary>
         public bool IsReady()
         {
-            return ModEntry.ModList.Any() || ModEntry.PackList.Any();
+            return Registrar.AreAllModsLoaded();
         }
 
         /// <summary>Get the current values.</summary>
