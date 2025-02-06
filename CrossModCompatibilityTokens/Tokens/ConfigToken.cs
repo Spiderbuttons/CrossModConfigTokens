@@ -61,7 +61,7 @@ namespace CrossModCompatibilityTokens.Tokens
                 return false;
             }
 
-            if (!ModEntry.ModList.ContainsKey(split[0]) && !ModEntry.PackList.ContainsKey(split[0]))
+            if (!Registrar.TryGetModMetadata(split[0], out var _, out error))
             {
                 error = $"[Spiderbuttons.CMCT/Config] Mod or Content Pack '{split[0]}' not found.";
                 return false;
