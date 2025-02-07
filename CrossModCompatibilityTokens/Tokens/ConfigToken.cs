@@ -67,6 +67,12 @@ namespace CrossModCompatibilityTokens.Tokens
                 return false;
             }
 
+            if (!ConfigCache[split[0]].TryGetConfig<string>(split[1], out _, out error))
+            {
+                error = $"[Spiderbuttons.CMCT/Config] Config option '{split[1]}' not found in mod or content pack '{split[0]}'.";
+                return false;
+            }
+
             error = null;
             return true;
         }

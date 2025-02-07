@@ -68,6 +68,12 @@ namespace CrossModCompatibilityTokens.Tokens
                 return false;
             }
 
+            if (!DynamicCache[split[0]].TryGetValues(split[1], out _, out error))
+            {
+                error = $"[Spiderbuttons.CMCT/Dynamic] DynamicToken '{split[1]}' not found in content pack '{split[0]}'.";
+                return false;
+            }
+
             error = null;
             return true;
         }
