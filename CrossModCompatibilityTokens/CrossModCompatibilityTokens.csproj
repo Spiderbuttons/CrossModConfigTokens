@@ -5,7 +5,6 @@
         <LangVersion>Latest</LangVersion>
         <GamePath>C:\Program Files (x86)\Steam\steamapps\common\Stardew Valley</GamePath>
         <GameModsPath>$(GamePath)\ModsMinimal</GameModsPath>
-        <EnableHarmony>true</EnableHarmony>
         <EnableModDeploy>true</EnableModDeploy>
         <EnableModZip>true</EnableModZip>
         <ModFolderName>CrossModCompatibilityTokens</ModFolderName>
