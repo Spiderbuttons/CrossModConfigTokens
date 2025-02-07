@@ -1,14 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection.Metadata.Ecma335;
-using ContentPatcher.Framework;
-using ContentPatcher.Framework.Tokens;
-using ContentPatcher.Framework.Tokens.ValueProviders;
-using CrossModCompatibilityTokens.Helpers;
-using Newtonsoft.Json.Linq;
+using HarmonyLib;
 using StardewModdingAPI;
-using StardewValley.Extensions;
 
 namespace CrossModCompatibilityTokens.Readers;
 
@@ -43,20 +37,24 @@ public static class DynamicReader
         }
     }
     
-    public static bool TryGetTokenManager([NotNullWhen(true)] out TokenManager? manager, out string? error)
+    private static bool TryGetTokenManager([NotNullWhen(true)] out object? manager, out string? error)
     {
         manager = null;
         error = null;
-        if (!Registrar.TryGetMod("Pathoschild.ContentPatcher", out var mod, out error) || mod is not ContentPatcher.ModEntry cp)
+        if (!Registrar.TryGetMod("Pathoschild.ContentPatcher", out var mod, out error))
         {
             return false;
         }
-
-        manager = cp.ScreenManager.Value.TokenManager;
+        
+        // manager = mod.ScreenManager.Value.TokenManager;
+        var ScreenManager = AccessTools.Field(mod.GetType(), "ScreenManager").GetValue(mod);
+        var Screen = AccessTools.Property(ScreenManager!.GetType(), "Value").GetValue(ScreenManager);
+        var TokenManager = AccessTools.Property(Screen!.GetType(), "TokenManager").GetValue(Screen);
+        manager = TokenManager!;
         return true;
     }
 
-    public static bool TryGetTokenContext(string uniqueId, [NotNullWhen(true)] out ModTokenContext? context, out string? error)
+    private static bool TryGetTokenContext(string uniqueId, [NotNullWhen(true)] out object? context, out string? error)
     {
         context = null;
         error = null;
@@ -65,11 +63,13 @@ public static class DynamicReader
             return false;
         }
 
-        context = manager.TrackLocalTokens(pack);
-        return true;
+        // context = manager.TrackLocalTokens(pack);
+        var TrackLocalTokens = AccessTools.Method(manager.GetType(), "TrackLocalTokens", [typeof(IContentPack)]);
+        context = TrackLocalTokens.Invoke(manager, [pack]);
+        return context is not null;
     }
 
-    public static bool TryGetDynamicToken(string uniqueId, string name, [NotNullWhen(true)] out IToken? token, out string? error)
+    private static bool TryGetDynamicToken(string uniqueId, string name, [NotNullWhen(true)] out object? token, out string? error)
     {
         token = null;
         error = null;
@@ -78,11 +78,13 @@ public static class DynamicReader
             return false;
         }
 
-        token = context.GetToken(name, enforceContext: false);
+        // token = context.GetToken(name, enforceContext: false);
+        var GetToken = AccessTools.Method(context.GetType(), "GetToken", [typeof(string), typeof(bool)]);
+        token = GetToken.Invoke(context, [name, false]);
         return token is not null;
     }
 
-    public static bool TryGetDynamicTokenValues(string id, string key, [NotNullWhen(true)] out IEnumerable<string>? values, out string? error)
+    private static bool TryGetDynamicTokenValues(string id, string key, [NotNullWhen(true)] out IEnumerable<string>? values, out string? error)
     {
         values = null;
         error = null;
@@ -91,7 +93,10 @@ public static class DynamicReader
             return false;
         }
 
-        values = token.GetValues(new EmptyInputArguments());
+        // values = token.GetValues(new EmptyInputArguments());
+        var EmptyInputArguments = Activator.CreateInstance(AccessTools.TypeByName("ContentPatcher.Framework.Tokens.EmptyInputArguments"), []);
+        var GetValues = AccessTools.Method(token.GetType(), "GetValues", [EmptyInputArguments!.GetType()]);
+        values = (IEnumerable<string>)GetValues.Invoke(token, [EmptyInputArguments])!;
         return true;
     }
 }

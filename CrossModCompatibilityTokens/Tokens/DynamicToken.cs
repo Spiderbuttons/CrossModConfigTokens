@@ -1,12 +1,8 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using ContentPatcher.Framework;
-using CrossModCompatibilityTokens.Helpers;
 using CrossModCompatibilityTokens.Readers;
-using HarmonyLib;
 
 namespace CrossModCompatibilityTokens.Tokens
 {
@@ -106,7 +102,7 @@ namespace CrossModCompatibilityTokens.Tokens
             var name = split[1];
 
             // Still can't figure out how to do this with a cache. The token is always late by a day if I don't grab it uncached...
-            if (DynamicCache.TryGetValue(uniqueId, out var manager) && manager.TryGetValuesNoCache(name, out var values, out var error))
+            if (DynamicCache.TryGetValue(uniqueId, out var manager) && manager.TryGetValuesNoCache(name, out var values, out var _))
             {
                 foreach (var value in values)
                 {
