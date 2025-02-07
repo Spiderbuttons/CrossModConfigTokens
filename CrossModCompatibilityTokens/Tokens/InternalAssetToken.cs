@@ -3,13 +3,25 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using CrossModCompatibilityTokens.Readers;
 using StardewModdingAPI;
 
 namespace CrossModCompatibilityTokens.Tokens
 {
-    internal class AssetToken
+    internal class InternalAssetToken
     {
-        private readonly Dictionary<string, Dictionary<string, IAssetName?>> cachedAssetNames = new();
+        private readonly Dictionary<string, InternalAssetReader.InternalAssetManager> AssetCache = new();
+        
+        public InternalAssetToken()
+        {
+            foreach (var mod in ModEntry.ModHelper.ModRegistry.GetAll())
+            {
+                if (InternalAssetReader.TryGetModContent(mod, out _, out _))
+                {
+                    AssetCache[mod.Manifest.UniqueID] = new InternalAssetReader.InternalAssetManager(mod.Manifest.UniqueID);
+                }
+            }
+        }
         
         /// <summary>Get whether the token allows input arguments (e.g. an NPC name for a relationship token).</summary>
         /// <remarks>Default false.</remarks>
@@ -43,13 +55,19 @@ namespace CrossModCompatibilityTokens.Tokens
             string[] split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ?? [];
             if (split.Length != 2)
             {
-                error = "Expected two arguments.";
+                error = "[Spiderbuttons.CMCT/InternalAsset] Expected two input arguments (UniqueID and Asset Path).";
                 return false;
             }
 
-            if (!ModEntry.ModList.ContainsKey(split[0]) && !ModEntry.PackList.ContainsKey(split[0]))
+            if (!Registrar.TryGetModMetadata(split[0], out _, out error))
             {
-                error = "Mod or pack not found.";
+                error = $"[Spiderbuttons.CMCT/InternalAsset] Mod or Content Pack '{split[0]}' not found.";
+                return false;
+            }
+            
+            if (!AssetCache[split[0]].TryGetValue(split[1], out _, out error))
+            {
+                error = $"[Spiderbuttons.CMCT/InternalAsset] Asset with path '{split[1]}' not found in mod or content pack '{split[0]}'.";
                 return false;
             }
 
@@ -61,27 +79,25 @@ namespace CrossModCompatibilityTokens.Tokens
         /// <returns>Returns whether the value changed, which may trigger patch updates.</returns>
         public bool UpdateContext()
         {
-            var shouldUpdate = false;
-            foreach (var modAsset in cachedAssetNames)
+            bool shouldUpdate = false;
+            foreach (var (_, content) in AssetCache)
             {
-                foreach (var (key, oldAssetName) in modAsset.Value)
+                foreach (var path in content.GetCachedPaths())
                 {
-                    var newAssetName = ModEntry.GrabInternalAssetName(modAsset.Key, key);
-                    
-                    if (oldAssetName == newAssetName) continue;
-                    
-                    cachedAssetNames[modAsset.Key][key] = newAssetName;
-                    shouldUpdate = true;
+                    if (content.TryGetValue(path, out var oldValue, out _) && content.TryGetValueNoCache(path, out var newValue, out _))
+                    {
+                        if (oldValue != newValue) shouldUpdate = true;
+                    }
                 }
             }
-            
+
             return shouldUpdate;
         }
 
         /// <summary>Get whether the token is available for use.</summary>
         public bool IsReady()
         {
-            return ModEntry.ModList.Any() || ModEntry.PackList.Any();
+            return Registrar.AreAllModsLoaded();
         }
 
         /// <summary>Get the current values.</summary>
@@ -95,25 +111,12 @@ namespace CrossModCompatibilityTokens.Tokens
                 yield break;
             }
 
-            var uniqueID = split[0];
-            var assetPath = split[1];
-            if (!cachedAssetNames.ContainsKey(uniqueID))
+            var uniqueId = split[0];
+            var path = split[1];
+            
+            if (AssetCache.TryGetValue(uniqueId, out var manager) && manager.TryGetValue(path, out var asset, out var error))
             {
-                cachedAssetNames.Add(uniqueID, new Dictionary<string, IAssetName?>());
-            }
-            
-            if (!cachedAssetNames[uniqueID].ContainsKey(assetPath))
-            {
-                cachedAssetNames[uniqueID].Add(assetPath, ModEntry.GrabInternalAssetName(uniqueID, assetPath));
-            }
-            
-            var assetName = cachedAssetNames[uniqueID][assetPath];
-            
-            if (assetName is null) yield break;
-            
-            foreach (var value in assetName.Name.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()))
-            {
-                yield return value;
+                yield return asset.BaseName;
             }
         }
     }
