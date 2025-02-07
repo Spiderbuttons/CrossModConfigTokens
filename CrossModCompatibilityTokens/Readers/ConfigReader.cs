@@ -107,7 +107,7 @@ public static class ConfigReader
         {
             if (currentValue is not JObject currentObject)
             {
-                Log.Warn($"Config schema from '{uniqueId}' does not have a config matching '{key}'!");
+                error = $"Config schema from '{uniqueId}' does not have a config matching '{key}'!";
                 return false;
             }
             currentValue = currentObject.GetValue(keySplit[i]);

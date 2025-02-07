@@ -110,7 +110,6 @@ namespace CrossModCompatibilityTokens.Tokens
                 var kvpSplit = kvp.Split(' ', 2);
                 if (kvpSplit.Length != 2) continue;
                 dict[kvpSplit[0]] = kvpSplit[1];
-                Log.Warn($"Key '{kvpSplit[0]}' with value '{kvpSplit[1]}'");
             }
 
             var uniqueID = split[0];
