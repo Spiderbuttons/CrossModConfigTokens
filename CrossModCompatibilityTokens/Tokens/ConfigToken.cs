@@ -1,11 +1,8 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using CrossModCompatibilityTokens.Helpers;
 using CrossModCompatibilityTokens.Readers;
-using Newtonsoft.Json.Linq;
 
 namespace CrossModCompatibilityTokens.Tokens
 {
@@ -116,7 +113,7 @@ namespace CrossModCompatibilityTokens.Tokens
             var uniqueId = split[0];
             var configKey = split[1];
 
-            if (ConfigCache.TryGetValue(uniqueId, out var modConfig) && modConfig.TryGetConfig<string>(configKey, out var config, out var error))
+            if (ConfigCache.TryGetValue(uniqueId, out var modConfig) && modConfig.TryGetConfig<string>(configKey, out var config, out _))
             {
                 yield return config;
             }

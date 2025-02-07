@@ -1,10 +1,8 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CrossModCompatibilityTokens.Readers;
-using StardewModdingAPI;
 
 namespace CrossModCompatibilityTokens.Tokens
 {
@@ -114,7 +112,7 @@ namespace CrossModCompatibilityTokens.Tokens
             var uniqueId = split[0];
             var path = split[1];
             
-            if (AssetCache.TryGetValue(uniqueId, out var manager) && manager.TryGetValue(path, out var asset, out var error))
+            if (AssetCache.TryGetValue(uniqueId, out var manager) && manager.TryGetValue(path, out var asset, out _))
             {
                 yield return asset.BaseName;
             }

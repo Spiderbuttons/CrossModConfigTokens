@@ -1,16 +1,11 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection.Metadata.Ecma335;
-using CrossModCompatibilityTokens.Helpers;
-using Newtonsoft.Json.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
 using StardewModdingAPI;
-using StardewValley.Extensions;
 
 namespace CrossModCompatibilityTokens.Readers;
 
 public static class TranslationReader
 {
-    public static bool TryGetModTranslator(string uniqueId, [NotNullWhen(true)] out ITranslationHelper? translator, out string? error)
+    private static bool TryGetModTranslator(string uniqueId, [NotNullWhen(true)] out ITranslationHelper? translator, out string? error)
     {
         translator = null;
         error = null;
@@ -28,7 +23,7 @@ public static class TranslationReader
         return TryGetModTranslator(mod.Manifest.UniqueID, out translator, out error);
     }
     
-    public static bool TryGetModTranslation(string uniqueId, string key, object? tokens, out string? value, out string? error)
+    private static bool TryGetModTranslation(string uniqueId, string key, object? tokens, out string? value, out string? error)
     {
         value = null;
         error = null;

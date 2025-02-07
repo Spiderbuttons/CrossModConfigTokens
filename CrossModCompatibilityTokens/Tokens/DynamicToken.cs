@@ -102,7 +102,7 @@ namespace CrossModCompatibilityTokens.Tokens
             var name = split[1];
 
             // Still can't figure out how to do this with a cache. The token is always late by a day if I don't grab it uncached...
-            if (DynamicCache.TryGetValue(uniqueId, out var manager) && manager.TryGetValuesNoCache(name, out var values, out var _))
+            if (DynamicCache.TryGetValue(uniqueId, out var manager) && manager.TryGetValuesNoCache(name, out var values, out _))
             {
                 foreach (var value in values)
                 {
