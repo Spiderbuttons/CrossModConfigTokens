@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using CrossModCompatibilityTokens.Helpers;
 using HarmonyLib;
 using StardewModdingAPI;
+using StardewModdingAPI.Utilities;
 
 namespace CrossModCompatibilityTokens.Readers;
 
@@ -47,10 +49,10 @@ public static class DynamicReader
         }
         
         // manager = mod.ScreenManager.Value.TokenManager;
-        var ScreenManager = AccessTools.Field(mod.GetType(), "ScreenManager").GetValue(mod);
-        var Screen = AccessTools.Property(ScreenManager!.GetType(), "Value").GetValue(ScreenManager);
-        var TokenManager = AccessTools.Property(Screen!.GetType(), "TokenManager").GetValue(Screen);
-        manager = TokenManager!;
+        var ScreenManager = ModEntry.ModHelper.Reflection.GetField<object>(mod, "ScreenManager").GetValue();
+        var Screen = ScreenManager.GetType().GetProperty("Value")!.GetValue(ScreenManager); // Can't use the Helper here because SMAPI won't reflect into its own internals for us ):
+        var TokenManager = ModEntry.ModHelper.Reflection.GetProperty<object>(Screen!, "TokenManager").GetValue();
+        manager = TokenManager;
         return true;
     }
 
@@ -64,9 +66,8 @@ public static class DynamicReader
         }
 
         // context = manager.TrackLocalTokens(pack);
-        var TrackLocalTokens = AccessTools.Method(manager.GetType(), "TrackLocalTokens", [typeof(IContentPack)]);
-        context = TrackLocalTokens.Invoke(manager, [pack]);
-        return context is not null;
+        context = ModEntry.ModHelper.Reflection.GetMethod(manager, "TrackLocalTokens").Invoke<object>(pack);
+        return true;
     }
 
     private static bool TryGetDynamicToken(string uniqueId, string name, [NotNullWhen(true)] out object? token, out string? error)
@@ -79,24 +80,22 @@ public static class DynamicReader
         }
 
         // token = context.GetToken(name, enforceContext: false);
-        var GetToken = AccessTools.Method(context.GetType(), "GetToken", [typeof(string), typeof(bool)]);
-        token = GetToken.Invoke(context, [name, false]);
-        return token is not null;
+        token = ModEntry.ModHelper.Reflection.GetMethod(context, "GetToken").Invoke<object>(name, false);
+        return true;
     }
 
-    private static bool TryGetDynamicTokenValues(string id, string key, [NotNullWhen(true)] out IEnumerable<string>? values, out string? error)
+    public static bool TryGetDynamicTokenValues(string uniqueId, string key, [NotNullWhen(true)] out IEnumerable<string>? values, out string? error)
     {
         values = null;
         error = null;
-        if (!TryGetDynamicToken(id, key, out var token, out error))
+        if (!TryGetDynamicToken(uniqueId, key, out var token, out error))
         {
             return false;
         }
 
         // values = token.GetValues(new EmptyInputArguments());
-        var EmptyInputArguments = Activator.CreateInstance(AccessTools.TypeByName("ContentPatcher.Framework.Tokens.EmptyInputArguments"), []);
-        var GetValues = AccessTools.Method(token.GetType(), "GetValues", [EmptyInputArguments!.GetType()]);
-        values = (IEnumerable<string>)GetValues.Invoke(token, [EmptyInputArguments])!;
+        var EmptyInputArguments = Activator.CreateInstance(Type.GetType("ContentPatcher.Framework.Tokens.EmptyInputArguments, ContentPatcher")!, []);
+        values = ModEntry.ModHelper.Reflection.GetMethod(token, "GetValues").Invoke<IEnumerable<string>>(EmptyInputArguments);
         return true;
     }
 }
