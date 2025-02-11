@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using CrossModCompatibilityTokens.API;
+using CrossModCompatibilityTokens.Implementation;
 using StardewModdingAPI;
 
 namespace CrossModCompatibilityTokens;

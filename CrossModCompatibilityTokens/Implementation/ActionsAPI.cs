@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using CrossModCompatibilityTokens.API;
+using CrossModCompatibilityTokens.Helpers;
 using StardewModdingAPI;
 
-namespace CrossModCompatibilityTokens;
+namespace CrossModCompatibilityTokens.Implementation;
 
-public class CrossModCompatibilityToolsAPI : ICrossModCompatibilityToolsAPI
+public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityToolsAPI
 { 
     public bool TryRegisterAction(IManifest mod, string id, Action action, Dictionary<string, object>? customFields, out string? error)
     {
@@ -64,6 +65,42 @@ public class CrossModCompatibilityToolsAPI : ICrossModCompatibilityToolsAPI
         {
             error = $"Error invoking action with ID '{action.Id}' for mod with UniqueID '{mod.Manifest.UniqueID}': {ex}";
             return false;
+        }
+    }
+
+    public void RegisterAction(IManifest mod, string id, Action action, Dictionary<string, object>? customFields)
+    {
+        if (!TryRegisterAction(mod, id, action, customFields, out var error))
+        {
+            Log.Error(error);
+        }
+    }
+
+    public ICrossModAction? GetActionFromMod(IModInfo mod, string actionId)
+    {
+        if (!TryGetActionFromMod(mod, actionId, out var action, out var error))
+        {
+            Log.Error(error);
+            return null;
+        }
+        return action;
+    }
+
+    public IDictionary<string, ICrossModAction>? GetActionsFromMod(IModInfo mod)
+    {
+        if (!TryGetActionsFromMod(mod, out var actions, out var error))
+        {
+            Log.Error(error);
+            return null;
+        }
+        return actions;
+    }
+
+    public void InvokeActionFromMod(IModInfo mod, string actionId)
+    {
+        if (!TryInvokeActionFromMod(mod, actionId, out var error))
+        {
+            Log.Error(error);
         }
     }
 }

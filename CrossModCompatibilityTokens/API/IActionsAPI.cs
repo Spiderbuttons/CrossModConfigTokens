@@ -14,6 +14,16 @@ public partial interface ICrossModCompatibilityToolsAPI
     bool TryGetActionsFromMod(IModInfo mod, [NotNullWhen(true)] out IDictionary<string, ICrossModAction>? actions, out string? error);
 
     bool TryInvokeActionFromMod(IModInfo mod, string actionId, out string? error);
+    
+    /* */
+    
+    void RegisterAction(IManifest mod, string id, Action action, Dictionary<string, object>? customFields);
+    
+    ICrossModAction? GetActionFromMod(IModInfo mod, string actionId);
+    
+    IDictionary<string, ICrossModAction>? GetActionsFromMod(IModInfo mod);
+    
+    void InvokeActionFromMod(IModInfo mod, string actionId);
 }
 
 public interface ICrossModAction
