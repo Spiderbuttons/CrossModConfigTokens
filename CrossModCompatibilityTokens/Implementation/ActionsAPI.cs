@@ -9,19 +9,19 @@ namespace CrossModCompatibilityTokens.Implementation;
 
 public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityToolsAPI
 { 
-    public bool TryRegisterAction(IManifest mod, string id, Action action, Dictionary<string, object>? customFields, out string? error)
+    public bool TryRegisterAction(IManifest manifest, string id, Action action, Dictionary<string, object>? customFields, out string? error)
     {
-        var modInfo = ModEntry.ModHelper.ModRegistry.Get(mod.UniqueID)!;
-        return TryRegisterAction(mod, new CrossModAction(modInfo, id, action, customFields), out error);
+        var modInfo = ModEntry.ModHelper.ModRegistry.Get(manifest.UniqueID)!;
+        return TryRegisterAction(manifest, new CrossModAction(modInfo, id, action, customFields), out error);
     }
 
-    public bool TryRegisterAction(IManifest mod, ICrossModAction action, out string? error)
+    public bool TryRegisterAction(IManifest manifest, ICrossModAction action, out string? error)
     {
         error = null;
-        if (!Registrar.ModActions.TryGetValue(mod.UniqueID, out var actions))
+        if (!Registrar.ModActions.TryGetValue(manifest.UniqueID, out var actions))
         {
             actions = new Dictionary<string, ICrossModAction>();
-            Registrar.ModActions[mod.UniqueID] = actions;
+            Registrar.ModActions[manifest.UniqueID] = actions;
         }
 
         if (!actions.TryAdd(action.Id, action))
@@ -110,5 +110,5 @@ public class CrossModAction(IModInfo mod, string id, Action action, Dictionary<s
     public IModInfo Mod { get; } = mod;
     public string Id { get; } = id;
     public Action Action { get; } = action;
-    public Dictionary<string, object> CustomFields { get; } = customFields ?? new Dictionary<string, object>();
+    public Dictionary<string, object>? CustomFields { get; } = customFields;
 }
