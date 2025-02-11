@@ -10,7 +10,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <summary>
     /// Try to get the value of a specific config option from a specific mod as a string.
     /// </summary>
-    /// <param name="mod">The mod whose config to look at.</param>
+    /// <param name="mod">The mod whose config you want to look at.</param>
     /// <param name="configKey">The name of the config option to look for.</param>
     /// <param name="configValue">The value read from the <c>config.json</c>, or <c>null</c> if it isn't found.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
@@ -20,7 +20,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <summary>
     /// Try to get the value of a specific config option from a specific mod as a specific type.
     /// </summary>
-    /// <param name="mod">The mod whose config to look at.</param>
+    /// <param name="mod">The mod whose config you want to look at.</param>
     /// <param name="configKey">The name of the config option to look for.</param>
     /// <param name="configValue">The value read from the <c>config.json</c> and parsed as the specified type, or <c>null</c> if it isn't found or cannot be parsed.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
@@ -35,7 +35,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <summary>
     /// Try to get the entire config object from a specific mod as a Dictionary of strings to objects.
     /// </summary>
-    /// <param name="mod">The mod whose config to look at.</param>
+    /// <param name="mod">The mod whose config you want to look at.</param>
     /// <param name="configObject">The config object read from the <c>config.json</c>, or <c>null</c> if it isn't found.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the config object was successfully found.</returns>
@@ -44,7 +44,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <summary>
     /// Try to get the entire config object from a specific mod as a Newtonsoft.Json JObject.
     /// </summary>
-    /// <param name="mod">The mod whose config to look at.</param>
+    /// <param name="mod">The mod whose config you want to look at.</param>
     /// <param name="configObject">The config object read from the <c>config.json</c>, or <c>null</c> if it isn't found.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the config object was successfully found.</returns>
@@ -56,7 +56,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <summary>
     /// Get the value of a specific config option from a specific mod as a string.
     /// </summary>
-    /// <param name="mod">The mod whose config to look at.</param>
+    /// <param name="mod">The mod whose config you want to look at.</param>
     /// <param name="configKey">The name of the config option to look for.</param>
     /// <returns>The value read from the <c>config.json</c>, or <c>null</c> if it isn't found.</returns>
     string? GetConfigValue(IModInfo mod, string configKey);
@@ -64,7 +64,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <summary>
     /// Get the value of a specific config option from a specific mod as a specific type.
     /// </summary>
-    /// <param name="mod">The mod whose config to look at.</param>
+    /// <param name="mod">The mod whose config you want to look at.</param>
     /// <param name="configKey">The name of the config option to look for.</param>
     /// <typeparam name="T">The type to attempt to parse the config value as.</typeparam>
     /// <returns>The value read from the <c>config.json</c> and parsed as the specified type, or <c>null</c> if it isn't found or cannot be parsed.</returns>
@@ -77,14 +77,14 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <summary>
     /// Get the entire config object from a specific mod as a Dictionary of strings to objects.
     /// </summary>
-    /// <param name="mod">The mod whose config to look at.</param>
+    /// <param name="mod">The mod whose config you want to look at.</param>
     /// <returns>The config object read from the <c>config.json</c>, or <c>null</c> if it isn't found.</returns>
     Dictionary<string, object>? GetConfig(IModInfo mod);
     
     /// <summary>
     /// Get the entire config object from a specific mod as a Newtonsoft.Json JObject.
     /// </summary>
-    /// <param name="mod">The mod whose config to look at.</param>
+    /// <param name="mod">The mod whose config you want to look at.</param>
     /// <returns>The config object read from the <c>config.json</c>, or <c>null</c> if it isn't found.</returns>
     /// <remarks>You will need a reference to Newtonsoft.Json to use this method.</remarks>
     JObject? GetConfigJObject(IModInfo mod);
