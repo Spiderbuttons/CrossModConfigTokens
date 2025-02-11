@@ -1,127 +1,90 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Security.AccessControl;
+using CrossModCompatibilityTokens.API;
 using CrossModCompatibilityTokens.Helpers;
-using Newtonsoft.Json.Linq;
 using StardewModdingAPI;
-using StardewModdingAPI.Framework;
-using StardewModdingAPI.Framework.ModHelpers;
+using StardewValley.Extensions;
 
 namespace CrossModCompatibilityTokens;
 
 public static class Registrar
-{
-    public static ModRegistry Registry { get; set; }
-
-    static Registrar()
+{ 
+    public static Dictionary<string, IDictionary<string, ICrossModAction>> ModActions { get; } = new();
+    
+    public static bool TryGetAction(IModInfo mod, string actionId, [NotNullWhen(true)] out ICrossModAction? action, out string? error)
     {
-        Registry = SCore.Instance.ModRegistry;
-    }
+        error = null;
+        action = null;
+        if (!TryGetActions(mod, out var actions, out error))
+        {
+            return false;
+        }
 
-    public static bool AreAllModsLoaded()
-    {
-        return Registry.AreAllModsLoaded;
+        if (!actions.TryGetValue(actionId, out action))
+        {
+            error = $"Action with ID '{actionId}' not found for mod with UniqueID '{mod.Manifest.UniqueID}'";
+            return false;
+        }
+        
+        return true;
     }
     
-    public static bool TryGetModMetadata(string uniqueId, [NotNullWhen(true)] out IModMetadata? mod, out string? error)
+    public static bool TryGetActions(IModInfo mod, [NotNullWhen(true)] out IDictionary<string, ICrossModAction>? actions, out string? error)
     {
-        mod = null;
         error = null;
-        if (!AreAllModsLoaded())
+        actions = null;
+        if (!TryGetActionsFromRegistrar(mod, out actions, out error))
         {
-            error = "SMAPI has not finished loading mods yet!";
-            return false;
+            if (!TryGetActionsFromEntry(mod, out actions, out error))
+            {
+                return false;
+            }
+            ModActions[mod.Manifest.UniqueID] = actions;
         }
-        if (Registry.Get(uniqueId) is null)
-        {
-            error = $"{uniqueId} does not exist in SMAPI's mod registry!";
-            return false;
-        }
-        mod = Registry.Get(uniqueId)!;
+
         return true;
     }
 
-    public static bool TryGetMod(string uniqueId, [NotNullWhen(true)] out IMod? mod, out string? error)
+    public static bool TryGetActionsFromRegistrar(IModInfo mod, [NotNullWhen(true)] out IDictionary<string, ICrossModAction>? actions, out string? error)
     {
-        mod = null;
         error = null;
-        if (!TryGetModMetadata(uniqueId, out var metadata, out error))
+        actions = null;
+        if (!ModActions.TryGetValue(mod.Manifest.UniqueID, out actions))
         {
+            error = $"Mod with UniqueID '{mod.Manifest.UniqueID}' has no actions registered";
             return false;
         }
-
-        if (!metadata.IsContentPack)
-        {
-            mod = metadata.Mod!;
-            return true;
-        }
         
-        error = $"{uniqueId} is a content pack.";
-        return false;
-    }
-    
-    public static bool TryGetMod(IModInfo modInfo, [NotNullWhen(true)] out IMod? mod, out string? error)
-    {
-        return TryGetMod(modInfo.Manifest.UniqueID, out mod, out error);
+        return true;
     }
 
-    public static bool TryGetContentPack(string uniqueId, [NotNullWhen(true)] out IContentPack? pack, out string? error)
+    public static bool TryGetActionsFromEntry(IModInfo mod, [NotNullWhen(true)] out IDictionary<string, ICrossModAction>? actions, out string? error)
     {
-        pack = null;
         error = null;
-        if (!TryGetModMetadata(uniqueId, out var metadata, out error))
+        actions = null;
+        if (!ModList.TryGetMod(mod, out var modInstance, out error))
         {
             return false;
         }
         
-        if (metadata.IsContentPack)
+        var actionsList = modInstance.GetType().GetField("CrossModCompatibilityTools")?.GetValue(modInstance) ?? modInstance.GetType().GetProperty("CrossModCompatibilityTools")?.GetValue(modInstance);
+        if (actionsList is not IList<Action> list)
         {
-            pack = metadata.ContentPack!;
-            return true;
+            error = $"Mod with UniqueID '{mod.Manifest.UniqueID}' has no actions registered";
+            return false;
         }
         
-        error = $"{uniqueId} is not a content pack!";
-        return false;
-    }
-    
-    public static bool TryGetContentPack(IModInfo modInfo, [NotNullWhen(true)] out IContentPack? pack, out string? error)
-    {
-        return TryGetContentPack(modInfo.Manifest.UniqueID, out pack, out error);
-    }
-
-    public static bool TryGetModHelper(string uniqueId, [NotNullWhen(true)] out IModHelper? helper, out string? error)
-    {
-        helper = null;
-        error = null;
-        if (!TryGetMod(uniqueId, out var mod, out error))
+        actions = new Dictionary<string, ICrossModAction>();
+        foreach (var item in list)
         {
-            return false;
+            var action = new CrossModAction(mod, item.GetMethodInfo().Name, item, null);
+            actions[item.GetMethodInfo().Name] = action;
         }
-
-        helper = mod.Helper;
+        
         return true;
-    }
-    
-    public static bool TryGetModHelper(IModInfo modInfo, [NotNullWhen(true)] out IModHelper? helper, out string? error)
-    {
-        return TryGetModHelper(modInfo.Manifest.UniqueID, out helper, out error);
-    }
-
-    public static bool TryGetModAssembly(string uniqueId, [NotNullWhen(true)] out Assembly? assembly, out string? error)
-    {
-        assembly = null;
-        error = null;
-        if (!TryGetMod(uniqueId, out var mod, out error))
-        {
-            return false;
-        }
-
-        assembly = mod.GetType().Assembly;
-        return true;
-    }
-    
-    public static bool TryGetModAssembly(IModInfo modInfo, [NotNullWhen(true)] out Assembly? assembly, out string? error)
-    {
-        return TryGetModAssembly(modInfo.Manifest.UniqueID, out assembly, out error);
     }
 }
