@@ -8,8 +8,6 @@ namespace CrossModCompatibilityTokens;
 
 public class CrossModCompatibilityToolsAPI : ICrossModCompatibilityToolsAPI
 { 
-    public record CrossModAction(IModInfo Mod, string Id, Action Action, Dictionary<string, object> CustomFields) : ICrossModAction;
-    
     public bool TryRegisterAction(IManifest mod, string id, Action action, Dictionary<string, object>? customFields, out string? error)
     {
         var modInfo = ModEntry.ModHelper.ModRegistry.Get(mod.UniqueID)!;
