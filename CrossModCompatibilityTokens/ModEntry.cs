@@ -32,20 +32,7 @@ namespace CrossModCompatibilityTokens
         {
             if (e.Button is SButton.F2)
             {
-                var api = new CrossModCompatibilityToolsAPI();
-                if (!api.TryInvokeActionFromMod(Helper.ModRegistry.Get("Spiderbuttons.CMCTTest")!, "SecondTest", out var error))
-                {
-                    Log.Error(error);
-                }
-            }
-
-            if (e.Button is SButton.F3)
-            {
-                var api = new CrossModCompatibilityToolsAPI();
-                if (!api.TryInvokeActionFromMod(Helper.ModRegistry.Get("Spiderbuttons.CMCTTest")!, "TestAction", out var error))
-                {
-                    Log.Error(error);
-                }
+                //
             }
         }
 
