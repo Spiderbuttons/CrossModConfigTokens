@@ -1,5 +1,4 @@
-﻿using CrossModCompatibilityTokens.API;
-using CrossModCompatibilityTokens.Helpers;
+﻿using CrossModCompatibilityTokens.Helpers;
 using CrossModCompatibilityTokens.Integration;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -31,20 +30,6 @@ namespace CrossModCompatibilityTokens
 
         private void OnButtonPressed(object? sender, ButtonPressedEventArgs e)
         {
-            if (e.Button is SButton.F1)
-            {
-                if (!Registrar.TryGetActionsFromEntry(Helper.ModRegistry.Get("Spiderbuttons.CMCTTest")!, out var actions, out var error))
-                {
-                    Log.Error(error);
-                    return;
-                }
-                
-                foreach (var action in actions)
-                {
-                    Log.Warn(action.Value.Id);
-                }
-            }
-            
             if (e.Button is SButton.F2)
             {
                 var api = new CrossModCompatibilityToolsAPI();

@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using CrossModCompatibilityTokens.API;
-using CrossModCompatibilityTokens.Helpers;
 using StardewModdingAPI;
-using StardewValley.Extensions;
 
 namespace CrossModCompatibilityTokens;
 
@@ -49,7 +45,7 @@ public static class Registrar
         return true;
     }
 
-    public static bool TryGetActionsFromRegistrar(IModInfo mod, [NotNullWhen(true)] out IDictionary<string, ICrossModAction>? actions, out string? error)
+    private static bool TryGetActionsFromRegistrar(IModInfo mod, [NotNullWhen(true)] out IDictionary<string, ICrossModAction>? actions, out string? error)
     {
         error = null;
         actions = null;
@@ -62,7 +58,7 @@ public static class Registrar
         return true;
     }
 
-    public static bool TryGetActionsFromEntry(IModInfo mod, [NotNullWhen(true)] out IDictionary<string, ICrossModAction>? actions, out string? error)
+    private static bool TryGetActionsFromEntry(IModInfo mod, [NotNullWhen(true)] out IDictionary<string, ICrossModAction>? actions, out string? error)
     {
         error = null;
         actions = null;
@@ -81,7 +77,7 @@ public static class Registrar
         actions = new Dictionary<string, ICrossModAction>();
         foreach (var item in list)
         {
-            var action = new CrossModAction(mod, item.GetMethodInfo().Name, item, null);
+            var action = new CrossModAction(mod, item.GetMethodInfo().Name, item);
             actions[item.GetMethodInfo().Name] = action;
         }
         

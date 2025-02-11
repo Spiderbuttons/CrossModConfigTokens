@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using CrossModCompatibilityTokens.Helpers;
 using Newtonsoft.Json.Linq;
 using StardewModdingAPI;
-using StardewModdingAPI.Framework;
 using StardewValley.Extensions;
 
 namespace CrossModCompatibilityTokens.Readers;
