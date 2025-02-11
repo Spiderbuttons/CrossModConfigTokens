@@ -62,7 +62,7 @@ namespace CrossModCompatibilityTokens.Tokens
         {
             string[] split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ?? [];
             
-            if (!Registrar.TryGetModMetadata(split[0], out var _, out error))
+            if (!ModList.TryGetModMetadata(split[0], out var _, out error))
             {
                 error = $"[Spiderbuttons.CMCT/Translation] Mod or Content Pack '{split[0]}' not found.";
                 return false;

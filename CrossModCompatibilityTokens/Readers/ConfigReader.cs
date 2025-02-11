@@ -50,14 +50,14 @@ public static class ConfigReader
     {
         config = null;
         error = null;
-        if (!Registrar.TryGetModMetadata(uniqueId, out var metadata, out error))
+        if (!ModList.TryGetModMetadata(uniqueId, out var metadata, out error))
             return false;
 
         try
         {
             if (metadata.IsContentPack)
             {
-                if (Registrar.TryGetContentPack(metadata.Manifest.UniqueID, out var pack, out error))
+                if (ModList.TryGetContentPack(metadata.Manifest.UniqueID, out var pack, out error))
                 {
                     if (pack.HasFile("config.json"))
                     {
@@ -71,7 +71,7 @@ public static class ConfigReader
             }
             else
             {
-                if (Registrar.TryGetMod(uniqueId, out var mod, out error))
+                if (ModList.TryGetMod(uniqueId, out var mod, out error))
                 {
                     config = mod.Helper.ModContent.Load<JObject>("config.json");
                     return true;

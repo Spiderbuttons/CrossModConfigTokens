@@ -39,7 +39,7 @@ public static class DynamicReader
     {
         manager = null;
         error = null;
-        if (!Registrar.TryGetMod("Pathoschild.ContentPatcher", out var mod, out error))
+        if (!ModList.TryGetMod("Pathoschild.ContentPatcher", out var mod, out error))
         {
             return false;
         }
@@ -56,7 +56,7 @@ public static class DynamicReader
     {
         context = null;
         error = null;
-        if (!TryGetTokenManager(out var manager, out error) || !Registrar.TryGetContentPack(uniqueId, out var pack, out error))
+        if (!TryGetTokenManager(out var manager, out error) || !ModList.TryGetContentPack(uniqueId, out var pack, out error))
         {
             return false;
         }

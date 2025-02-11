@@ -58,7 +58,7 @@ namespace CrossModCompatibilityTokens.Tokens
                 return false;
             }
 
-            if (!Registrar.TryGetModMetadata(split[0], out var _, out error))
+            if (!ModList.TryGetModMetadata(split[0], out var _, out error))
             {
                 error = $"[Spiderbuttons.CMCT/Config] Mod or Content Pack '{split[0]}' not found.";
                 return false;
@@ -96,7 +96,7 @@ namespace CrossModCompatibilityTokens.Tokens
         /// <summary>Get whether the token is available for use.</summary>
         public bool IsReady()
         {
-            return Registrar.AreAllModsLoaded();
+            return ModList.AreAllModsLoaded();
         }
 
         /// <summary>Get the current values.</summary>

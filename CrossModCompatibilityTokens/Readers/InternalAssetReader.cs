@@ -39,13 +39,13 @@ public static class InternalAssetReader
     {
         content = null;
         error = null;
-        if (Registrar.TryGetMod(uniqueId, out var mod, out error))
+        if (ModList.TryGetMod(uniqueId, out var mod, out error))
         {
             content = mod.Helper.ModContent;
             return true;
         }
 
-        if (Registrar.TryGetContentPack(uniqueId, out var pack, out error))
+        if (ModList.TryGetContentPack(uniqueId, out var pack, out error))
         {
             content = pack.ModContent;
             return true;

@@ -9,7 +9,7 @@ public static class TranslationReader
     {
         translator = null;
         error = null;
-        if (!Registrar.TryGetModMetadata(uniqueId, out var metadata, out error))
+        if (!ModList.TryGetModMetadata(uniqueId, out var metadata, out error))
         {
             return false;
         }

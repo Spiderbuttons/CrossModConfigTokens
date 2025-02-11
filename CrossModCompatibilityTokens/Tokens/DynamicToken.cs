@@ -14,7 +14,7 @@ namespace CrossModCompatibilityTokens.Tokens
         {
             foreach (var mod in ModEntry.ModHelper.ModRegistry.GetAll())
             {
-                if (Registrar.TryGetContentPack(mod, out _, out _) && mod.Manifest.ContentPackFor?.UniqueID is "Pathoschild.ContentPatcher")
+                if (ModList.TryGetContentPack(mod, out _, out _) && mod.Manifest.ContentPackFor?.UniqueID is "Pathoschild.ContentPatcher")
                 {
                     DynamicCache[mod.Manifest.UniqueID] = new DynamicReader.DynamicTokenManager(mod.Manifest.UniqueID);
                 }
@@ -58,7 +58,7 @@ namespace CrossModCompatibilityTokens.Tokens
                 return false;
             }
 
-            if (!Registrar.TryGetContentPack(split[0], out var _, out error))
+            if (!ModList.TryGetContentPack(split[0], out var _, out error))
             {
                 error = $"[Spiderbuttons.CMCT/Dynamic] Content Patcher content pack '{split[0]}' not found.";
                 return false;
@@ -84,7 +84,7 @@ namespace CrossModCompatibilityTokens.Tokens
         /// <summary>Get whether the token is available for use.</summary>
         public bool IsReady()
         {
-            return Registrar.AreAllModsLoaded();
+            return ModList.AreAllModsLoaded();
         }
 
         /// <summary>Get the current values.</summary>
