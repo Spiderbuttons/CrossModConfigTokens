@@ -5,10 +5,6 @@ using StardewModdingAPI;
 
 namespace CrossModCompatibilityTokens.API;
 
-/// <summary>
-/// Provides methods for interacting with the configuration files of other installed mods.
-/// </summary>
-/// <remarks>This API reads the <c>config.json</c> file from a mod's folder. Therefore, all values start off as strings regardless of what type they represent in the mod itself.</remarks>
 public partial interface ICrossModCompatibilityToolsAPI
 {
     /// <summary>
@@ -33,7 +29,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <remarks>
     ///     <para>Simple types like bools, ints, floats, etc. should parse fine, as well as any type with a <c>Parse(string)</c> or <c>TryParse(string, out object, out object)</c> method. Otherwise, you will need to use the non-generic version of this method to get the string value and parse it yourself.
     ///     </para>
-    /// </remarks>  
+    /// </remarks>
     bool TryGetConfigValue<T>(IModInfo mod, string configKey, [NotNullWhen(true)] out T? configValue, out string? error);
 
     /// <summary>
