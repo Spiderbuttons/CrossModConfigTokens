@@ -1,14 +1,36 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using CrossModCompatibilityTokens.Helpers;
 using StardewModdingAPI;
 
 namespace CrossModCompatibilityTokens.Readers;
 
 public static class TranslationReader
 {
-    private static bool TryGetModTranslator(string uniqueId, [NotNullWhen(true)] out ITranslationHelper? translator, out string? error)
+    public static readonly Dictionary<string, ITranslationHelper> TransCache = new();
+
+    public static void BuildCache()
+    {
+        foreach (var mod in ModEntry.ModHelper.ModRegistry.GetAll())
+        {
+            if (TryGetModTranslationHelper(mod, out var translator, out _))
+            {
+                TransCache[mod.Manifest.UniqueID] = translator;
+            }
+        }
+    }
+    
+    public static bool TryGetModTranslationHelper(string uniqueId, [NotNullWhen(true)] out ITranslationHelper? translator, out string? error)
     {
         translator = null;
         error = null;
+        
+        if (TransCache.TryGetValue(uniqueId, out translator))
+        {
+            Log.Alert("Found from cache");
+            return true;
+        }
+        
         if (!ModList.TryGetModMetadata(uniqueId, out var metadata, out error))
         {
             return false;
@@ -18,16 +40,16 @@ public static class TranslationReader
         return true;
     }
     
-    public static bool TryGetModTranslator(IModInfo mod, [NotNullWhen(true)] out ITranslationHelper? translator, out string? error)
+    public static bool TryGetModTranslationHelper(IModInfo mod, [NotNullWhen(true)] out ITranslationHelper? translator, out string? error)
     {
-        return TryGetModTranslator(mod.Manifest.UniqueID, out translator, out error);
+        return TryGetModTranslationHelper(mod.Manifest.UniqueID, out translator, out error);
     }
     
-    private static bool TryGetModTranslation(string uniqueId, string key, object? tokens, out string? value, out string? error)
+    public static bool TryGetModTranslation(string uniqueId, string key, object? tokens, [NotNullWhen(true)] out Translation? value, out string? error)
     {
         value = null;
         error = null;
-        if (!TryGetModTranslator(uniqueId, out var translator, out error))
+        if (!TryGetModTranslationHelper(uniqueId, out var translator, out error))
         {
             return false;
         }
@@ -44,7 +66,7 @@ public static class TranslationReader
         return false;
     }
 
-    public static bool TryGetModTranslation(string id, string key, out string? value, out string? error)
+    public static bool TryGetModTranslation(string id, string key, [NotNullWhen(true)] out Translation? value, out string? error)
     {
         value = null;
         error = null;

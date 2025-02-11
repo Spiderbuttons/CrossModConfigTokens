@@ -13,19 +13,7 @@ namespace CrossModCompatibilityTokens.Tokens
         /*********
          ** Fields
          *********/
-        private readonly Dictionary<string, ITranslationHelper> TransCache = new();
         private LocalizedContentManager.LanguageCode LastLocale;
-
-        public TranslationToken()
-        {
-            foreach (var mod in ModEntry.ModHelper.ModRegistry.GetAll())
-            {
-                if (TranslationReader.TryGetModTranslator(mod, out var translator, out _))
-                {
-                    TransCache[mod.Manifest.UniqueID] = translator;
-                }
-            }
-        }
 
         /****
          ** Metadata
@@ -112,7 +100,7 @@ namespace CrossModCompatibilityTokens.Tokens
             }
 
             var uniqueID = split[0];
-            if (TransCache.TryGetValue(uniqueID, out var translator))
+            if (TranslationReader.TransCache.TryGetValue(uniqueID, out var translator))
             {
                 yield return translator.Get(split[1], dict);
             }
