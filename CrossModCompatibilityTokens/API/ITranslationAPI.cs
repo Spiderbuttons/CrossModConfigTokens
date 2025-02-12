@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Newtonsoft.Json.Linq;
+﻿using System.Diagnostics.CodeAnalysis;
 using StardewModdingAPI;
-using StardewModdingAPI.Framework;
 
 namespace CrossModCompatibilityTokens.API;
 
