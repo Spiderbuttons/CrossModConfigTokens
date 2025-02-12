@@ -48,6 +48,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
     {
         if (!TryGetTranslation(mod, transKey, out var transValue, out var error))
         {
+            Log.Error(error);
             return null;
         }
         return transValue;
@@ -57,6 +58,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
     {
         if (!TryGetTranslation(mod, transKey, tokens, out var transValue, out var error))
         {
+            Log.Error(error);
             return null;
         }
         return transValue;
@@ -66,6 +68,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
     {
         if (!TryGetTranslationHelper(mod, out var translator, out var error))
         {
+            Log.Error(error);
             return null;
         }
         return translator;
