@@ -1,5 +1,8 @@
-﻿using CrossModCompatibilityTokens.Helpers;
+﻿using System.Collections.Generic;
+using CrossModCompatibilityTokens.Helpers;
+using CrossModCompatibilityTokens.Implementation;
 using CrossModCompatibilityTokens.Integration;
+using CrossModCompatibilityTokens.Readers;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using CrossModCompatibilityTokens.Tokens;
@@ -38,6 +41,9 @@ namespace CrossModCompatibilityTokens
 
         private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
         {
+            TranslationReader.BuildCache();
+            DynamicReader.BuildCache();
+            
             ContentPatcherAPI = Helper.ModRegistry.GetApi<IContentPatcherAPI>("Pathoschild.ContentPatcher");
             if (ContentPatcherAPI is not null)
             {
