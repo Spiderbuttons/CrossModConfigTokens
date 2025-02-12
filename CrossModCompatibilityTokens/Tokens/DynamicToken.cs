@@ -8,18 +8,18 @@ namespace CrossModCompatibilityTokens.Tokens
 {
     internal class DynamicToken
     {
-        private readonly Dictionary<string, DynamicReader.DynamicTokenManager> DynamicCache = new();
+        // private readonly Dictionary<string, DynamicReader.DynamicTokenManager> DynamicCache = new();
         
-        public DynamicToken()
-        {
-            foreach (var mod in ModEntry.ModHelper.ModRegistry.GetAll())
-            {
-                if (ModList.TryGetContentPack(mod, out _, out _) && mod.Manifest.ContentPackFor?.UniqueID is "Pathoschild.ContentPatcher")
-                {
-                    DynamicCache[mod.Manifest.UniqueID] = new DynamicReader.DynamicTokenManager(mod.Manifest.UniqueID);
-                }
-            }
-        }
+        // public DynamicToken()
+        // {
+        //     foreach (var mod in ModEntry.ModHelper.ModRegistry.GetAll())
+        //     {
+        //         if (ModList.TryGetContentPack(mod, out _, out _) && mod.Manifest.ContentPackFor?.UniqueID is "Pathoschild.ContentPatcher")
+        //         {
+        //             DynamicCache[mod.Manifest.UniqueID] = new DynamicReader.DynamicTokenManager(mod.Manifest.UniqueID);
+        //         }
+        //     }
+        // }
 
         /// <summary>Get whether the token allows input arguments (e.g. an NPC name for a relationship token).</summary>
         /// <remarks>Default false.</remarks>
@@ -63,8 +63,8 @@ namespace CrossModCompatibilityTokens.Tokens
                 error = $"[Spiderbuttons.CMCT/Dynamic] Content Patcher content pack '{split[0]}' not found.";
                 return false;
             }
-
-            if (!DynamicCache[split[0]].TryGetValues(split[1], out _, out error))
+            
+            if (!DynamicReader.DynamicCache.TryGetValue(split[0], out var cache) || !cache.TryGetValues(split[1], out _, out error))
             {
                 error = $"[Spiderbuttons.CMCT/Dynamic] DynamicToken '{split[1]}' not found in content pack '{split[0]}'.";
                 return false;
@@ -102,7 +102,7 @@ namespace CrossModCompatibilityTokens.Tokens
             var name = split[1];
 
             // Still can't figure out how to do this with a cache. The token is always late by a day if I don't grab it uncached...
-            if (DynamicCache.TryGetValue(uniqueId, out var manager) && manager.TryGetValuesNoCache(name, out var values, out _))
+            if (DynamicReader.DynamicCache.TryGetValue(uniqueId, out var manager) && manager.TryGetValuesNoCache(name, out var values, out _))
             {
                 foreach (var value in values)
                 {

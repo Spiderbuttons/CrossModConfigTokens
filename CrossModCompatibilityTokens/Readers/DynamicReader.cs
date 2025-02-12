@@ -6,6 +6,8 @@ namespace CrossModCompatibilityTokens.Readers;
 
 public static class DynamicReader
 {
+    public static readonly Dictionary<string, DynamicTokenManager> DynamicCache = new();
+    
     public class DynamicTokenManager(string uniqueId)
     {
         private string ModId { get; } = uniqueId;
@@ -32,6 +34,17 @@ public static class DynamicReader
         public IEnumerable<string> GetCachedNames()
         {
             return Cache.Keys;
+        }
+    }
+
+    public static void BuildCache()
+    {
+        foreach (var mod in ModEntry.ModHelper.ModRegistry.GetAll())
+        {
+            if (ModList.TryGetContentPack(mod, out _, out _) && mod.Manifest.ContentPackFor?.UniqueID is "Pathoschild.ContentPatcher")
+            {
+                DynamicCache[mod.Manifest.UniqueID] = new DynamicTokenManager(mod.Manifest.UniqueID);
+            }
         }
     }
     
