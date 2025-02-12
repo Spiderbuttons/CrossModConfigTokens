@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using CrossModCompatibilityTokens.API;
 using CrossModCompatibilityTokens.Implementation;
 using StardewModdingAPI;
+using StardewValley.Extensions;
 
 namespace CrossModCompatibilityTokens;
 
@@ -21,12 +23,13 @@ public static class Registrar
             return false;
         }
 
-        if (!actions.TryGetValue(actionId, out action))
+        if (!actions.TryGetValue(actionId, out action) && !actions.Values.Any(ac => ac.Action.Method.Name.EqualsIgnoreCase(actionId)))
         {
             error = $"Action with ID '{actionId}' not found for mod with UniqueID '{mod.Manifest.UniqueID}'";
             return false;
         }
         
+        action ??= actions.Values.First(ac => ac.Action.Method.Name.EqualsIgnoreCase(actionId));
         return true;
     }
     
@@ -69,7 +72,7 @@ public static class Registrar
         }
         
         var actionsList = modInstance.GetType().GetField("CrossModCompatibilityTools")?.GetValue(modInstance) ?? modInstance.GetType().GetProperty("CrossModCompatibilityTools")?.GetValue(modInstance);
-        if (actionsList is not IList<Action> list)
+        if (actionsList is not IDictionary<string, Action> list)
         {
             error = $"Mod with UniqueID '{mod.Manifest.UniqueID}' has no actions registered";
             return false;
@@ -78,8 +81,8 @@ public static class Registrar
         actions = new Dictionary<string, ICrossModAction>();
         foreach (var item in list)
         {
-            var action = new CrossModAction(mod, item.GetMethodInfo().Name, item);
-            actions[item.GetMethodInfo().Name] = action;
+            var action = new CrossModAction(mod, item.Key, item.Value);
+            actions[item.Key] = action;
         }
         
         return true;

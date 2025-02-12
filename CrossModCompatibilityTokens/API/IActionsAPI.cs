@@ -26,6 +26,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="action">A CrossModAction instance containing the Action you want to get along with its metadata, or <c>null</c> if the Action was not found.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the Action was found.</returns>
+    /// <remarks>If no Action with the given <c>actionId</c> is found, this function will attempt to find an Action whose method name matches the <c>actionId</c> instead as a fallback.</remarks>
     bool TryGetActionFromMod(IModInfo mod, string actionId, [NotNullWhen(true)] out ICrossModAction? action, out string? error);
 
     /// <summary>
@@ -44,6 +45,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="actionId">The ID of the Action you want to invoke.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the Action was invoked successfully.</returns>
+    /// <remarks>If no Action with the given <c>actionId</c> is found, this function will attempt to find and invoke an Action whose method name matches the <c>actionId</c> instead as a fallback.</remarks>
     bool TryInvokeActionFromMod(IModInfo mod, string actionId, out string? error);
     
     /* */
@@ -63,6 +65,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="mod">The mod that registered the Action.</param>
     /// <param name="actionId">The ID of the Action you want to get.</param>
     /// <returns>A CrossModAction instance containing the Action you want to get along with its metadata, or <c>null</c> if the Action was not found.</returns>
+    /// <remarks>If no Action with the given <c>actionId</c> is found, this function will attempt to find an Action whose method name matches the <c>actionId</c> instead as a fallback.</remarks>
     ICrossModAction? GetActionFromMod(IModInfo mod, string actionId);
     
     /// <summary>
@@ -77,6 +80,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// </summary>
     /// <param name="mod">The mod that registered the Action.</param>
     /// <param name="actionId">The ID of the Action you want to invoke.</param>
+    /// <remarks>If no Action with the given <c>actionId</c> is found, this function will attempt to find and invoke an Action whose method name matches the <c>actionId</c> instead as a fallback.</remarks>
     void InvokeActionFromMod(IModInfo mod, string actionId);
 }
 
