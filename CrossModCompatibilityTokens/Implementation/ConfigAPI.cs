@@ -88,44 +88,44 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
             return true;
         }
         
-        // We will search the mod's ModEntry for a field which stores a class whose fields match all the keys in the config dictionary we just got.
-        foreach (var field in modInstance.GetType().GetRuntimeFields())
+        foreach (var member in modInstance.GetType().GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
         {
-            if (field.FieldType is not { IsClass: true, IsAbstract: false, IsGenericType: false }) continue;
-            
-            var fieldValue = field.GetValue(modInstance);
-            if (fieldValue == null) continue;
-            
-            var fieldValueProperties = field.FieldType.GetProperties();
-            var fieldValueFields = field.FieldType.GetFields();
-            var allKeysFound = config.Keys.All(key => fieldValueProperties.Any(p => p.Name.EqualsIgnoreCase(key)) || fieldValueFields.Any(f => f.Name.EqualsIgnoreCase(key)));
-            if (!allKeysFound) continue;
-            
-            configClass = fieldValue;
-            ConfigClassCache[mod.Manifest.UniqueID] = configClass;
-            return true;
-        }
-        
-        // If we didn't find a config field, we look for a config property instead.
-        foreach (var property in modInstance.GetType().GetRuntimeProperties())
-        {
-            if (property.PropertyType is not { IsClass: true, IsAbstract: false, IsGenericType: false }) continue;
-            
-            var propertyValue = property.GetValue(modInstance);
-            if (propertyValue == null) continue;
-            
-            var propertyValueProperties = property.PropertyType.GetProperties();
-            var propertyValueFields = property.PropertyType.GetFields();
-            var allKeysFound = config.Keys.All(key => propertyValueProperties.Any(p => p.Name.EqualsIgnoreCase(key)) || propertyValueFields.Any(f => f.Name.EqualsIgnoreCase(key)));
-            if (!allKeysFound) continue;
-            
-            configClass = propertyValue;
+            if (member is not (PropertyInfo or FieldInfo) || !TryCompareConfigKeys(member, config.Keys.ToList(), out configClass)) continue;
             ConfigClassCache[mod.Manifest.UniqueID] = configClass;
             return true;
         }
         
         error = $"Failed to find config class for mod with UniqueID '{mod.Manifest.UniqueID}'";
         return false;
+    }
+
+    private bool TryCompareConfigKeys(MemberInfo member, List<string> configKeys, [NotNullWhen(true)] out object? configClass)
+    {
+        configClass = null;
+        switch (member)
+        {
+            case PropertyInfo { PropertyType: not { IsClass: true, IsAbstract: false, IsGenericType: false } }:
+            case FieldInfo { FieldType: not { IsClass: true, IsAbstract: false, IsGenericType: false } }:
+                return false;
+        }
+        
+        var memberValue = member switch
+        {
+            PropertyInfo property => property.GetValue(property),
+            FieldInfo field => field.GetValue(field),
+            _ => null
+        };
+        if (memberValue == null) return false;
+        
+        var memberValueProperties = memberValue.GetType().GetProperties();
+        var memberValueFields = memberValue.GetType().GetFields();
+        if (!configKeys.All(key => memberValueProperties.Any(p => p.Name.EqualsIgnoreCase(key)) || memberValueFields.Any(f => f.Name.EqualsIgnoreCase(key))))
+        {
+            return false;
+        }
+        
+        configClass = memberValue;
+        return true;
     }
 
     public string? GetConfigValue(IModInfo mod, string configKey)
