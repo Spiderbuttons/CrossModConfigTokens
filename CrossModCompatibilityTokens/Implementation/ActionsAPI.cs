@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using CrossModCompatibilityTokens.API;
 using CrossModCompatibilityTokens.Helpers;
 using StardewModdingAPI;
@@ -9,36 +10,17 @@ namespace CrossModCompatibilityTokens.Implementation;
 
 public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityToolsAPI
 { 
-    public bool TryRegisterAction(IManifest manifest, string id, Action action, Dictionary<string, object>? customFields, out string? error)
+    public bool TryRegisterAction(IManifest manifest, string? consumer, string actionId, Action action, Dictionary<string, object>? customFields, out string? error)
     {
         var modInfo = ModEntry.ModHelper.ModRegistry.Get(manifest.UniqueID)!;
-        return TryRegisterAction(manifest, new CrossModAction(modInfo, id, action, customFields), out error);
+        return Registrar.TryRegisterAction(manifest, new CrossModAction(modInfo, consumer, actionId, action, customFields), out error);
     }
 
-    public bool TryRegisterAction(IManifest manifest, ICrossModAction action, out string? error)
-    {
-        error = null;
-        if (!Registrar.ModActions.TryGetValue(manifest.UniqueID, out var actions))
-        {
-            actions = new Dictionary<string, ICrossModAction>();
-            Registrar.ModActions[manifest.UniqueID] = actions;
-        }
-
-        if (!actions.TryAdd(action.Id, action))
-        {
-            error = $"Action '{action.Id}' is already registered with Cross-Mod Compatibility Tools.";
-            return false;
-        }
-
-        return true;
-
-    }
-
-    public bool TryGetActionFromMod(IModInfo mod, string actionId, [NotNullWhen(true)] out ICrossModAction? action, out string? error)
+    public bool TryGetActionFromMod(IModInfo mod, string actionId, [NotNullWhen(true)] out ICrossModAction? action, out string? error, bool reflectIfNecessary = false)
     {
         error = null;
         action = null;
-        return Registrar.TryGetAction(mod, actionId, out action, out error);
+        return Registrar.TryGetAction(mod, actionId, out action, out error, reflectIfNecessary);
     }
     
     public bool TryGetActionsFromMod(IModInfo mod, [NotNullWhen(true)] out IDictionary<string, ICrossModAction>? actions, out string? error)
@@ -47,11 +29,29 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         actions = null;
         return Registrar.TryGetActions(mod, out actions, out error);
     }
-    
-    public bool TryInvokeActionFromMod(IModInfo mod, string actionId, out string? error)
+
+    public bool TryGetActionsForConsumer(IManifest consumer, [NotNullWhen(true)] out List<ICrossModAction>? actions, out string? error)
     {
         error = null;
-        if (!Registrar.TryGetAction(mod, actionId, out var action, out error))
+        actions = null;
+        List<ICrossModAction> actionsList = new();
+        foreach (var (mod, dict) in Registrar.ModActions)
+        {
+            actionsList.AddRange(dict.Values.Where(action => action.IntendedConsumer?.Equals(consumer.UniqueID) ?? false));
+        }
+        if (actionsList.Count > 0)
+        {
+            actions = actionsList;
+            return true;
+        }
+        error = $"No actions found for consumer with UniqueID '{consumer.UniqueID}'";
+        return false;
+    }
+
+    public bool TryInvokeActionFromMod(IModInfo mod, string actionId, out string? error, bool reflectIfNecessary = false)
+    {
+        error = null;
+        if (!Registrar.TryGetAction(mod, actionId, out var action, out error, reflectIfNecessary))
         {
             return false;
         }
@@ -68,17 +68,17 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         }
     }
 
-    public void RegisterAction(IManifest mod, string id, Action action, Dictionary<string, object>? customFields)
+    public void RegisterAction(IManifest mod, string? consumer, string actionId, Action action, Dictionary<string, object>? customFields)
     {
-        if (!TryRegisterAction(mod, id, action, customFields, out var error))
+        if (!TryRegisterAction(mod, consumer, actionId, action, customFields, out var error))
         {
             Log.Error(error);
         }
     }
 
-    public ICrossModAction? GetActionFromMod(IModInfo mod, string actionId)
+    public ICrossModAction? GetActionFromMod(IModInfo mod, string actionId, bool reflectIfNecessary = false)
     {
-        if (!TryGetActionFromMod(mod, actionId, out var action, out var error))
+        if (!TryGetActionFromMod(mod, actionId, out var action, out var error, reflectIfNecessary))
         {
             Log.Error(error);
             return null;
@@ -96,18 +96,29 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         return actions;
     }
 
-    public void InvokeActionFromMod(IModInfo mod, string actionId)
+    public List<ICrossModAction>? GetActionsForConsumer(IManifest consumer)
     {
-        if (!TryInvokeActionFromMod(mod, actionId, out var error))
+        if (!TryGetActionsForConsumer(consumer, out var actions, out var error))
+        {
+            Log.Error(error);
+            return null;
+        }
+        return actions;
+    }
+
+    public void InvokeActionFromMod(IModInfo mod, string actionId, bool reflectIfNecessary = false)
+    {
+        if (!TryInvokeActionFromMod(mod, actionId, out var error, reflectIfNecessary))
         {
             Log.Error(error);
         }
     }
 }
 
-public class CrossModAction(IModInfo mod, string id, Action action, Dictionary<string, object>? customFields = null) : ICrossModAction
+public class CrossModAction(IModInfo mod, string? consumer, string id, Action action, Dictionary<string, object>? customFields = null) : ICrossModAction
 {
     public IModInfo Mod { get; } = mod;
+    public string? IntendedConsumer { get; } = consumer;
     public string Id { get; } = id;
     public Action Action { get; } = action;
     public Dictionary<string, object>? CustomFields { get; } = customFields;
