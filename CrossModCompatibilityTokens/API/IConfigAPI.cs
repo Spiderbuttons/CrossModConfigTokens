@@ -49,7 +49,17 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the config object was successfully found.</returns>
     /// <remarks>You will need a reference to Newtonsoft.Json to use this method.</remarks>
-    bool TryGetConfig(IModInfo mod, [NotNullWhen(true)] out JObject? configObject, out string? error);
+    bool TryGetConfigJObject(IModInfo mod, [NotNullWhen(true)] out JObject? configObject, out string? error);
+
+    /// <summary>
+    /// Try to get the actual config class from a specific mod.
+    /// </summary>
+    /// <param name="mod">The mod whose config you want to look at.</param>
+    /// <param name="configClass">The config class, or <c>null</c> if it isn't found.</param>
+    /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
+    /// <returns>A bool indicating whether the config class was successfully found.</returns>
+    /// <remarks>This is an expensive operation. Consider getting the values using the other methods and parsing them yourself if necessary.</remarks>
+    bool TryGetConfigClass(IModInfo mod, [NotNullWhen(true)] out object? configClass, out string? error);
     
     /* */
     
