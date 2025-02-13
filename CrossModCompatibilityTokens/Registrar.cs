@@ -158,9 +158,4 @@ public static class Registrar
     {
         return method?.DeclaringType?.FullName + ":" + method?.Name;
     }
-
-    public static void GrabAssets()
-    {
-        //Dictionary<string, string> assets = Game1.content.Load<Dictionary<string, string>>("Spiderbuttons.CMCT/Actions");
-    }
 }
