@@ -35,9 +35,9 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         error = null;
         actions = null;
         List<ICrossModAction> actionsList = new();
-        foreach (var (mod, dict) in Registrar.ModActions)
+        foreach (var list in Registrar.ModActions.Values)
         {
-            actionsList.AddRange(dict.Values.Where(action => action.IntendedConsumer?.Equals(consumer.UniqueID) ?? false));
+            actionsList.AddRange(list.Values.Where(action => action.IntendedConsumer?.Equals(consumer.UniqueID) ?? false));
         }
         if (actionsList.Count > 0)
         {
