@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Newtonsoft.Json.Linq;
 using StardewModdingAPI;
@@ -54,11 +55,11 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <summary>
     /// Try to get the actual config class from a specific mod.
     /// </summary>
-    /// <param name="mod">The mod whose config you want to look at.</param>
+    /// <param name="mod">The mod whose config you want to look for.</param>
     /// <param name="configClass">The config class, or <c>null</c> if it isn't found.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the config class was successfully found.</returns>
-    /// <remarks>This is an expensive operation. Consider getting the values using the other methods and parsing them yourself if necessary.</remarks>
+    /// <remarks>This will only look inside a mod's entry class for a field or property that holds their config class.</remarks>
     bool TryGetConfigClass(IModInfo mod, [NotNullWhen(true)] out object? configClass, out string? error);
     
     /* */
@@ -98,4 +99,12 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <returns>The config object read from the <c>config.json</c>, or <c>null</c> if it isn't found.</returns>
     /// <remarks>You will need a reference to Newtonsoft.Json to use this method.</remarks>
     JObject? GetConfigJObject(IModInfo mod);
+    
+    /// <summary>
+    /// Get the actual config class from a specific mod.
+    /// </summary>
+    /// <param name="mod">The mod whose config you want to look for.</param>
+    /// <returns>The config class, or <c>null</c> if it isn't found.</returns>
+    /// <remarks>This will only look inside a mod's entry class for a field or property that holds their config class.</remarks>
+    object? GetConfigClass(IModInfo mod);
 }

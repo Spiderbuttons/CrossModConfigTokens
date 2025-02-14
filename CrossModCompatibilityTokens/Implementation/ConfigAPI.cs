@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -161,6 +160,16 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
     public JObject? GetConfigJObject(IModInfo mod)
     {
         if (!TryGetConfigJObject(mod, out JObject? config, out var error))
+        {
+            Log.Error(error);
+            return null;
+        }
+        return config;
+    }
+
+    public object? GetConfigClass(IModInfo mod)
+    {
+        if (!TryGetConfigClass(mod, out object? config, out var error))
         {
             Log.Error(error);
             return null;
