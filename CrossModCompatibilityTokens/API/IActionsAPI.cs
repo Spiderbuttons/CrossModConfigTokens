@@ -51,7 +51,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="actions">A List of CrossModAction instances containing the Actions you want to get along with their metadata, or <c>null</c> if no Actions were found.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the Actions were found.</returns>
-    bool TryGetActionsForConsumer(IManifest consumer, [NotNullWhen(true)] out List<ICrossModAction>? actions, out string? error);
+    bool TryGetActionsForConsumer(IManifest consumer, [NotNullWhen(true)] out IList<ICrossModAction>? actions, out string? error);
 
     /// <summary>
     /// Try to invoke an Action that another mod registered with Cross-Mod Compatibility Tools.
@@ -104,7 +104,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// </summary>
     /// <param name="consumer">The manifest of the mod who the Actions are intended for.</param>
     /// <returns>A List of CrossModAction instances containing the Actions you want to get along with their metadata, or <c>null</c> if no Actions were found.</returns>    
-    List<ICrossModAction>? GetActionsForConsumer(IManifest consumer);
+    IList<ICrossModAction>? GetActionsForConsumer(IManifest consumer);
     
     /// <summary>
     /// Invoke an Action that another mod registered with Cross-Mod Compatibility Tools.

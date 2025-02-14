@@ -30,7 +30,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         return Registrar.TryGetActions(mod, out actions, out error);
     }
 
-    public bool TryGetActionsForConsumer(IManifest consumer, [NotNullWhen(true)] out List<ICrossModAction>? actions, out string? error)
+    public bool TryGetActionsForConsumer(IManifest consumer, [NotNullWhen(true)] out IList<ICrossModAction>? actions, out string? error)
     {
         error = null;
         actions = null;
@@ -96,7 +96,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         return actions;
     }
 
-    public List<ICrossModAction>? GetActionsForConsumer(IManifest consumer)
+    public IList<ICrossModAction>? GetActionsForConsumer(IManifest consumer)
     {
         if (!TryGetActionsForConsumer(consumer, out var actions, out var error))
         {
