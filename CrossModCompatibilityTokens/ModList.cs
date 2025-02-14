@@ -23,14 +23,11 @@ public static class ModList
     {
         mod = null;
         error = null;
-        if (!AreAllModsLoaded())
-        {
-            error = "SMAPI has not finished loading mods yet!";
-            return false;
-        }
+        
         if (ModRegistry.Get(uniqueId) is null)
         {
             error = $"{uniqueId} does not exist in SMAPI's mod registry!";
+            if (!AreAllModsLoaded()) error += " (SMAPI has not finished loading mods yet!)";
             return false;
         }
         mod = ModRegistry.Get(uniqueId)!;
