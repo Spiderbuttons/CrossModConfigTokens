@@ -15,8 +15,7 @@ namespace CrossModCompatibilityTools;
 public static class Registrar
 { 
     public static readonly ProxyManager<Nothing> ProxyManager = CreateProxyManager();
-    
-    public static Dictionary<string, IDictionary<string, ICrossModAction>> ModActions { get; } = new();
+    private static Dictionary<string, IDictionary<string, ICrossModAction>> ModActions { get; } = new();
     
     public static bool TryGetAllActions([NotNullWhen(true)] out List<ICrossModAction>? actions, [NotNullWhen(false)] out string? error)
     {
