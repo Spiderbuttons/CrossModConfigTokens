@@ -153,6 +153,8 @@ public static class Registrar
         }
         
         var actionsList = modInstance.GetType().GetField("CrossModCompatibilityTools")?.GetValue(modInstance) ?? modInstance.GetType().GetProperty("CrossModCompatibilityTools")?.GetValue(modInstance);
+        actionsList ??= modInstance.GetType().GetField("CrossModActions")?.GetValue(modInstance) ?? modInstance.GetType().GetProperty("CrossModActions")?.GetValue(modInstance);
+        actionsList ??= modInstance.GetType().GetField("CMCTActions")?.GetValue(modInstance) ?? modInstance.GetType().GetProperty("CMCTActions")?.GetValue(modInstance);
         if (actionsList is not IDictionary<string, Action> list)
         {
             error = $"Mod with UniqueID '{mod.Manifest.UniqueID}' has no actions registered";
