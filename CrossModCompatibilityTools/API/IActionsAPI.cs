@@ -20,7 +20,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="customFields">Optional. A dictionary of custom fields you want to attach to the Action.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the Action was registered successfully.</returns>
-    /// <remarks>All Action IDs are prefixed with the UniqueID found in <c>manifest</c>.</remarks>
+    /// <remarks>All Action IDs will be automatically prefixed with the UniqueID found in the <c>manifest</c>. There is no need to add it yourself.</remarks>
     bool TryRegisterAction(IManifest manifest, string actionId, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData, [NotNullWhen(false)] out string? error);
     
     /// <summary>
@@ -126,6 +126,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="action">The Action you want to register.</param>
     /// <param name="customFields">Optional. A dictionary of custom fields you want to attach to the Action.</param>
     /// <param name="customData">Optional. A class object of custom data you want to attach to the Action. You should explain your class structure in your documentation if you want others to use this custom data.</param>
+    /// <remarks>All Action IDs will be automatically prefixed with the UniqueID found in the <c>manifest</c>. There is no need to add it yourself.</remarks>
     void RegisterAction(IManifest manifest, string actionId, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData);
 
     /// <summary>
