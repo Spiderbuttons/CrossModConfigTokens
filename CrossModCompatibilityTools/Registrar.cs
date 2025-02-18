@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using CrossModCompatibilityTools.Helpers;
 using CrossModCompatibilityTools.API;
 using CrossModCompatibilityTools.Implementation;
+using Nanoray.Pintail;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Extensions;
@@ -14,7 +16,23 @@ namespace CrossModCompatibilityTools;
 
 public static class Registrar
 { 
+    public static readonly ProxyManager<Nothing> ProxyManager = CreateProxyManager();
+    
     public static Dictionary<string, IDictionary<string, ICrossModAction>> ModActions { get; } = new();
+    
+    public static bool TryGetAllActions([NotNullWhen(true)] out List<ICrossModAction>? actions, out string? error)
+    {
+        error = null;
+        actions = null;
+        if (!ModActions.Any())
+        {
+            error = "No actions registered";
+            return false;
+        }
+        
+        actions = ModActions.Values.SelectMany(x => x.Values).ToList();
+        return true;
+    }
     
     public static bool TryRegisterAction(IManifest manifest, ICrossModAction action, out string? error)
     {
@@ -94,7 +112,8 @@ public static class Registrar
             return false;
         }
         
-        action = new CrossModAction(mod, null, QualifyMethodName(method), method.CreateDelegate<Action>());
+        // action = new CrossModAction(mod, null, QualifyMethodName(method), method.CreateDelegate<Action>());
+        action = new CrossModAction(ProxyManager, mod, QualifyMethodName(method), null, null, method.CreateDelegate<Action>(), null, null);
         ModActions[mod.Manifest.UniqueID][action.Id] = action;
         return true;
     }
@@ -147,7 +166,8 @@ public static class Registrar
         actions = new Dictionary<string, ICrossModAction>();
         foreach (var item in list)
         {
-            var action = new CrossModAction(mod, null, item.Key, item.Value);
+            // var action = new CrossModAction(mod, null, item.Key, item.Value);
+            var action = new CrossModAction(ProxyManager, mod, item.Key, null, null, item.Value, null, null);
             actions[item.Key] = action;
         }
         
@@ -157,5 +177,15 @@ public static class Registrar
     private static string QualifyMethodName(MethodInfo method)
     {
         return method?.DeclaringType?.FullName + ":" + method?.Name;
+    }
+    
+    private static ProxyManager<Nothing> CreateProxyManager()
+    {
+        var assemblyBuilder =
+            AssemblyBuilder.DefineDynamicAssembly(new($"CrossModAPI.Proxies, Version=1.0.0.0, Culture=neutral"),
+                AssemblyBuilderAccess.Run);
+        var moduleBuilder = assemblyBuilder.DefineDynamicModule("Proxies");
+        return new ProxyManager<Nothing>(moduleBuilder,
+            new ProxyManagerConfiguration<Nothing> { AccessLevelChecking = AccessLevelChecking.DisabledButOnlyAllowPublicMembers });
     }
 }
