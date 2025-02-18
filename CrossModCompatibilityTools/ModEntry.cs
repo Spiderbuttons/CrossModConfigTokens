@@ -1,4 +1,6 @@
-﻿using StardewModdingAPI;
+﻿using System.Linq;
+using CrossModCompatibilityTools.Helpers;
+using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using CrossModCompatibilityTools.Implementation;
 using CrossModCompatibilityTools.Integration;
