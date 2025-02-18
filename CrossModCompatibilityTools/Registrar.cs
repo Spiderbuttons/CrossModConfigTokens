@@ -4,12 +4,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using CrossModCompatibilityTools.Helpers;
 using CrossModCompatibilityTools.API;
 using CrossModCompatibilityTools.Implementation;
 using Nanoray.Pintail;
 using StardewModdingAPI;
-using StardewValley;
 using StardewValley.Extensions;
 
 namespace CrossModCompatibilityTools;
@@ -20,7 +18,7 @@ public static class Registrar
     
     public static Dictionary<string, IDictionary<string, ICrossModAction>> ModActions { get; } = new();
     
-    public static bool TryGetAllActions([NotNullWhen(true)] out List<ICrossModAction>? actions, out string? error)
+    public static bool TryGetAllActions([NotNullWhen(true)] out List<ICrossModAction>? actions, [NotNullWhen(false)] out string? error)
     {
         error = null;
         actions = null;
@@ -34,7 +32,7 @@ public static class Registrar
         return true;
     }
     
-    public static bool TryRegisterAction(IManifest manifest, ICrossModAction action, out string? error)
+    public static bool TryRegisterAction(IManifest manifest, ICrossModAction action, [NotNullWhen(false)] out string? error)
     {
         error = null;
         if (!ModActions.TryGetValue(manifest.UniqueID, out var actions))
@@ -53,7 +51,7 @@ public static class Registrar
 
     }
     
-    public static bool TryGetAction(IModInfo mod, string actionId, [NotNullWhen(true)] out ICrossModAction? action, out string? error, bool reflectIfNecessary)
+    public static bool TryGetAction(IModInfo mod, string actionId, [NotNullWhen(true)] out ICrossModAction? action, [NotNullWhen(false)] out string? error, bool reflectIfNecessary)
     {
         error = null;
         action = null;
@@ -81,7 +79,7 @@ public static class Registrar
     }
 
     public static bool TryGetActionFromReflection(IModInfo mod, string qualifiedName,
-        [NotNullWhen(true)] out ICrossModAction? action, out string? error)
+        [NotNullWhen(true)] out ICrossModAction? action, [NotNullWhen(false)] out string? error)
     {
         action = null;
         error = null;
@@ -112,13 +110,12 @@ public static class Registrar
             return false;
         }
         
-        // action = new CrossModAction(mod, null, QualifyMethodName(method), method.CreateDelegate<Action>());
-        action = new CrossModAction(ProxyManager, mod, QualifyMethodName(method), null, null, method.CreateDelegate<Action>(), null, null);
+        action = new CrossModAction(ProxyManager, mod, QualifyMethodName(method), null, null, null, method.CreateDelegate<Action>(), null, null);
         ModActions[mod.Manifest.UniqueID][action.Id] = action;
         return true;
     }
     
-    public static bool TryGetActions(IModInfo mod, [NotNullWhen(true)] out IDictionary<string, ICrossModAction>? actions, out string? error)
+    public static bool TryGetActions(IModInfo mod, [NotNullWhen(true)] out IDictionary<string, ICrossModAction>? actions, [NotNullWhen(false)] out string? error)
     {
         error = null;
         actions = null;
@@ -134,7 +131,7 @@ public static class Registrar
         return true;
     }
 
-    private static bool TryGetActionsFromRegistrar(IModInfo mod, [NotNullWhen(true)] out IDictionary<string, ICrossModAction>? actions, out string? error)
+    private static bool TryGetActionsFromRegistrar(IModInfo mod, [NotNullWhen(true)] out IDictionary<string, ICrossModAction>? actions, [NotNullWhen(false)] out string? error)
     {
         error = null;
         actions = null;
@@ -147,7 +144,7 @@ public static class Registrar
         return true;
     }
 
-    private static bool TryGetActionsFromEntry(IModInfo mod, [NotNullWhen(true)] out IDictionary<string, ICrossModAction>? actions, out string? error)
+    private static bool TryGetActionsFromEntry(IModInfo mod, [NotNullWhen(true)] out IDictionary<string, ICrossModAction>? actions, [NotNullWhen(false)] out string? error)
     {
         error = null;
         actions = null;
@@ -166,17 +163,16 @@ public static class Registrar
         actions = new Dictionary<string, ICrossModAction>();
         foreach (var item in list)
         {
-            // var action = new CrossModAction(mod, null, item.Key, item.Value);
-            var action = new CrossModAction(ProxyManager, mod, item.Key, null, null, item.Value, null, null);
+            var action = new CrossModAction(ProxyManager, mod, item.Key, null, null, null, item.Value, null, null);
             actions[item.Key] = action;
         }
         
         return true;
     }
 
-    private static string QualifyMethodName(MethodInfo method)
+    public static string QualifyMethodName(MethodInfo method)
     {
-        return method?.DeclaringType?.FullName + ":" + method?.Name;
+        return method.DeclaringType?.FullName + ":" + method.Name;
     }
     
     private static ProxyManager<Nothing> CreateProxyManager()

@@ -29,14 +29,22 @@ namespace ProducerExample
         {
             api = Helper.ModRegistry.GetApi<ICrossModCompatibilityToolsAPI>("Spiderbuttons.CMCT")!;
 
-            if (!api.TryRegisterAction(ModManifest, "TestAction", "Test",
-                    () => "This action logs a little test log to the SMAPI console!", TestAction, null,
+            if (!api.TryRegisterAction(ModManifest, "TestAction", "Test", () => "The name of this action goes here.",
+                    () => "This action logs a little test log to the SMAPI console!", () => Log.Error("This doesn't do much."), null,
                     new TestData("UniqueId/AssetName", () => "An icon for my whatever.", null), out var error))
             {
-                ModMonitor.Log(error, LogLevel.Error);
+                Log.Error(error);
             }
 
-            ModMonitor.Log("Successfully registered TestAction.", LogLevel.Info);
+            Log.Info("Successfully registered TestAction.");
+
+            var otherMod = ModHelper.ModRegistry.Get("Spiderbuttons.ButtonsExtraBooksCore")!;
+            if (!api.TryRegisterAction(otherMod.Manifest, TestAction, out error))
+            {
+                Log.Error(error);
+            }
+            
+            Log.Info("Successfully registered BookAction.");
         }
         
         public void TestAction()
@@ -50,5 +58,10 @@ namespace ProducerExample
         public string AssetName { get; set; } = assetName;
         public Func<string> Description { get; set; } = description;
         public Texture2D? Texture { get; set; } = texture;
+
+        public void ExampleFunction(int value)
+        {
+            Log.Debug($"Example. {value}");
+        }
     }
 }

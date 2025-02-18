@@ -53,6 +53,7 @@ namespace ConsumerExample
                 var data = actions.First().GetCustomData<SomeTestData>();
                 ModMonitor.Log($"Data: {data?.AssetName} - {data?.Description()}", LogLevel.Info);
                 actions.First().PerformAction();
+                data?.ExampleFunction(4);
             }
         }
     }
@@ -62,5 +63,7 @@ namespace ConsumerExample
         public string AssetName { get; set; }
         public Func<string> Description { get; set; }
         public Texture2D? Texture { get; set; }
+
+        public void ExampleFunction(int value);
     }
 }

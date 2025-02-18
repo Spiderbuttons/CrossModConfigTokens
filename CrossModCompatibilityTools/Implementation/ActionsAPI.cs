@@ -13,11 +13,17 @@ namespace CrossModCompatibilityTools.Implementation;
 
 public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityToolsAPI
 { 
-    public bool TryRegisterAction(IManifest manifest, string actionId, string? category, Func<string?> description, Action action, Dictionary<string, string>? customFields, object? customData, out string? error)
+    public bool TryRegisterAction(IManifest manifest, string actionId, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData, [NotNullWhen(false)] out string? error)
     {
         var modInfo = ModEntry.ModHelper.ModRegistry.Get(manifest.UniqueID)!;
         actionId = $"{modInfo.Manifest.UniqueID}_{actionId}";
-        return Registrar.TryRegisterAction(manifest, new CrossModAction(Registrar.ProxyManager, modInfo, actionId, category, description, action, customFields, customData), out error);
+        return Registrar.TryRegisterAction(manifest, new CrossModAction(Registrar.ProxyManager, modInfo, actionId, category, name, description, action, customFields, customData), out error);
+    }
+
+    public bool TryRegisterAction(IManifest manifest, Action action, [NotNullWhen(false)] out string? error)
+    {
+        var actionId = $"{manifest.UniqueID}_{action.Method.Name}";
+        return Registrar.TryRegisterAction(manifest, new CrossModAction(Registrar.ProxyManager, ModEntry.ModHelper.ModRegistry.Get(manifest.UniqueID)!, actionId, null, null, null, action, null, null), out error);
     }
 
     public bool TryGetActionFromMod(IModInfo mod, string actionId, [NotNullWhen(true)] out ICrossModAction? action, out string? error, bool reflectIfNecessary = false)
@@ -27,7 +33,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         return Registrar.TryGetAction(mod, actionId, out action, out error, reflectIfNecessary);
     }
     
-    public bool TryGetActionsFromModAsDict(IModInfo mod, [NotNullWhen(true)] out IReadOnlyDictionary<string, ICrossModAction>? actions, out string? error)
+    public bool TryGetActionsFromModAsDict(IModInfo mod, [NotNullWhen(true)] out IReadOnlyDictionary<string, ICrossModAction>? actions, [NotNullWhen(false)] out string? error)
     {
         error = null;
         actions = null;
@@ -41,7 +47,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
     }
 
     public bool TryGetActionsFromModAsList(IModInfo mod,
-        [NotNullWhen(true)] out IReadOnlyList<ICrossModAction>? actions, out string? error)
+        [NotNullWhen(true)] out IReadOnlyList<ICrossModAction>? actions, [NotNullWhen(false)] out string? error)
     {
         error = null;
         actions = null;
@@ -55,7 +61,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
     }
 
     public bool TryGetActionsByCategory(string category,
-        [NotNullWhen(true)] out IReadOnlyList<ICrossModAction>? actions, out string? error)
+        [NotNullWhen(true)] out IReadOnlyList<ICrossModAction>? actions, [NotNullWhen(false)] out string? error)
     {
         error = null;
         actions = null;
@@ -69,7 +75,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
     }
 
     public bool TryGetActionsAsDict([NotNullWhen(true)] out IReadOnlyDictionary<string, ICrossModAction>? actions,
-        out string? error)
+        [NotNullWhen(false)] out string? error)
     {
         error = null;
         actions = null;
@@ -83,7 +89,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
     }
     
     public bool TryGetActionsAsList([NotNullWhen(true)] out IReadOnlyList<ICrossModAction>? actions,
-        out string? error)
+        [NotNullWhen(false)] out string? error)
     {
         error = null;
         actions = null;
@@ -96,7 +102,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         return true;
     }
 
-    public bool TryInvokeActionFromMod(IModInfo mod, string actionId, out string? error, bool reflectIfNecessary = false)
+    public bool TryInvokeActionFromMod(IModInfo mod, string actionId, [NotNullWhen(false)] out string? error, bool reflectIfNecessary = false)
     {
         error = null;
         if (!Registrar.TryGetAction(mod, actionId, out var action, out error, reflectIfNecessary))
@@ -116,7 +122,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         }
     }
 
-    public bool TryInvokeActionById(string actionId, out string? error)
+    public bool TryInvokeActionById(string actionId, [NotNullWhen(false)] out string? error)
     {
         error = null;
         if (!Registrar.TryGetAllActions(out var allActions, out error))
@@ -143,9 +149,17 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         }
     }
 
-    public void RegisterAction(IManifest manifest, string actionId, string? category, Func<string?> description, Action action, Dictionary<string, string>? customFields, object? customData)
+    public void RegisterAction(IManifest manifest, string actionId, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData)
     {
-        if (!TryRegisterAction(manifest, actionId, category, description, action, customFields, customData, out var error))
+        if (!TryRegisterAction(manifest, actionId, category, name, description, action, customFields, customData, out var error))
+        {
+            Log.Error(error);
+        }
+    }
+
+    public void RegisterAction(IManifest manifest, Action action)
+    {
+        if (!TryRegisterAction(manifest, action, out var error))
         {
             Log.Error(error);
         }
@@ -228,18 +242,20 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
     }
 }
 
-public class CrossModAction(ProxyManager<Nothing> proxyManager, IModInfo mod, string id, string? category, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData) : ICrossModAction
+public class CrossModAction(ProxyManager<Nothing> proxyManager, IModInfo mod, string id, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData) : ICrossModAction
 {
     public IModInfo Mod { get; } = mod;
     public string Id { get; } = id;
     public string Category { get; } = category ?? "Default";
-    public Func<string> Description { get; } = description ?? (() => action.Method.Name);
+    public Func<string> Name { get; } = name ?? (() => Registrar.QualifyMethodName(action.Method));
+    public Func<string> Description { get; } = description ?? (() => "(No description provided.)");
     public Action Action { get; } = action;
     public Dictionary<string, string>? CustomFields { get; } = customFields;
+    public object? RawCustomData { get; } = customData;
 
     public T? GetCustomData<T>() where T : class
     {
-        return customData is not null ? proxyManager.ObtainProxy<T>(customData) : null;
+        return RawCustomData is not null ? proxyManager.ObtainProxy<T>(RawCustomData) : null;
     }
 
     public void PerformAction()
