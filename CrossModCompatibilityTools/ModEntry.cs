@@ -36,7 +36,7 @@ namespace CrossModCompatibilityTools
             Helper.Events.Input.ButtonPressed += OnButtonPressed;
 
             Helper.ConsoleCommands.Add("cmct_actions",
-                "List actions registered with Cross-Mod Compatibility Tools.\n\nUsage: cmct actions [uniqueID]\n- uniqueID: the uniqueID of a mod to view the registered actions for",
+                "List actions registered with Cross-Mod Compatibility Tools.\n\nUsage: cmct actions [uniqueID]\nUsage: cmct actions [detailed]\nUsage: cmct actions [uniqueID] [detailed]\n- uniqueID: the uniqueID of a mod to view the registered actions for\n- detailed: whether to show CustomData information for each action if it exists\n\nExample: cmct actions Spiderbuttons.ProducerExample detailed",
                 this.LogActions);
         }
 
