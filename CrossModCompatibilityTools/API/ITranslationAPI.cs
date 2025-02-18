@@ -13,7 +13,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="transValue">The translation, or <c>null</c> if it isn't found.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the translation was successfully found.</returns>
-    bool TryGetTranslation(IModInfo mod, string transKey, [NotNullWhen(true)] out Translation? transValue, out string? error);
+    bool TryGetTranslation(IModInfo mod, string transKey, [NotNullWhen(true)] out Translation? transValue, [NotNullWhen(false)] out string? error);
     
     /// <summary>
     /// Try to get a translation from another mod's i18n.
@@ -24,7 +24,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="transValue"></param>
     /// <param name="error"></param>
     /// <returns></returns>
-    bool TryGetTranslation(IModInfo mod, string transKey, object? tokens, [NotNullWhen(true)] out Translation? transValue, out string? error);
+    bool TryGetTranslation(IModInfo mod, string transKey, object? tokens, [NotNullWhen(true)] out Translation? transValue, [NotNullWhen(false)] out string? error);
     
     /// <summary>
     /// Try to get the translation helper from another mod.
@@ -33,7 +33,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="translator">The translation helper, or <c>null</c> if it isn't found.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the translation helper was successfully found.</returns>
-    bool TryGetTranslationHelper(IModInfo mod, [NotNullWhen(true)] out ITranslationHelper? translator, out string? error);
+    bool TryGetTranslationHelper(IModInfo mod, [NotNullWhen(true)] out ITranslationHelper? translator, [NotNullWhen(false)] out string? error);
     
     /// <summary>
     /// Get a translation from another mod's i18n.

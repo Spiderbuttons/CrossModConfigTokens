@@ -14,7 +14,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="values">The value(s) of the dynamic token, or <c>null</c> if it isn't found.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the dynamic token was successfully found.</returns>
-    bool TryGetDynamicTokenValues(IModInfo mod, string token, [NotNullWhen(true)] out IEnumerable<string>? values, out string? error);
+    bool TryGetDynamicTokenValues(IModInfo mod, string token, [NotNullWhen(true)] out IEnumerable<string>? values, [NotNullWhen(false)] out string? error);
     
     /// <summary>
     /// Get the value(s) of a Content Patcher content pack's dynamic token.
