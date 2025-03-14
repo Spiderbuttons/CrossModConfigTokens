@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using CrossModCompatibilityTools.Helpers;
 using CrossModCompatibilityTools.Readers;
+using StardewModdingAPI;
 
 namespace CrossModCompatibilityTools.Tokens
 {
@@ -55,18 +57,21 @@ namespace CrossModCompatibilityTools.Tokens
             if (split.Length != 2)
             {
                 error = "[Spiderbuttons.CMCT/Config] Expected two input arguments (UniqueID and Config Name).";
+                ModEntry.ModMonitor.LogOnce(error, LogLevel.Warn);
                 return false;
             }
 
             if (!ModList.TryGetModMetadata(split[0], out var _, out error))
             {
                 error = $"[Spiderbuttons.CMCT/Config] Mod or Content Pack '{split[0]}' not found.";
+                ModEntry.ModMonitor.LogOnce(error, LogLevel.Warn);
                 return false;
             }
 
             if (!ConfigCache[split[0]].TryGetConfig<string>(split[1], out _, out error))
             {
                 error = $"[Spiderbuttons.CMCT/Config] Config option '{split[1]}' not found in mod or content pack '{split[0]}'.";
+                ModEntry.ModMonitor.LogOnce(error, LogLevel.Warn);
                 return false;
             }
 
@@ -113,10 +118,11 @@ namespace CrossModCompatibilityTools.Tokens
             var uniqueId = split[0];
             var configKey = split[1];
 
-            if (ConfigCache.TryGetValue(uniqueId, out var modConfig) && modConfig.TryGetConfig<string>(configKey, out var config, out _))
+            string? error = null;
+            if (ConfigCache.TryGetValue(uniqueId, out var modConfig) && modConfig.TryGetConfig<string>(configKey, out var config, out error))
             {
                 yield return config;
-            }
+            } else Log.Warn($"Unable to retrieve config value '{configKey}' from mod '{uniqueId}': {error}");
         }
     }
 }

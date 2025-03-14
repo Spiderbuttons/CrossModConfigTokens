@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using CrossModCompatibilityTools.Helpers;
 using CrossModCompatibilityTools.Readers;
 using StardewModdingAPI;
 using StardewValley;
@@ -52,6 +53,7 @@ namespace CrossModCompatibilityTools.Tokens
             if (!ModList.TryGetModMetadata(split[0], out var _, out error))
             {
                 error = $"[Spiderbuttons.CMCT/Translation] Mod or Content Pack '{split[0]}' not found.";
+                ModEntry.ModMonitor.LogOnce(error, LogLevel.Warn);
                 return false;
             }
 
