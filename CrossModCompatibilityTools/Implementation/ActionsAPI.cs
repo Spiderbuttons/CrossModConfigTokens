@@ -20,6 +20,12 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         return Registrar.TryRegisterAction(manifest, new CrossModAction(Registrar.ProxyManager, modInfo, actionId, category, name, description, action, customFields, customData), out error);
     }
 
+    public bool TryRegisterAction(IManifest manifest, string actionId, Func<string> name, Func<string> description, Action action,
+        out string? error)
+    {
+        throw new NotImplementedException();
+    }
+
     public bool TryRegisterAction(IManifest manifest, Action action, [NotNullWhen(false)] out string? error)
     {
         var actionId = $"{manifest.UniqueID}_{action.Method.Name}";
@@ -155,6 +161,11 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         {
             Log.Error(error);
         }
+    }
+
+    public void RegisterAction(IManifest manifest, string actionId, Func<string>? name, Func<string>? description, Action action)
+    {
+        throw new NotImplementedException();
     }
 
     public void RegisterAction(IManifest manifest, Action action)

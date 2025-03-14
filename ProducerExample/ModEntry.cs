@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using CrossModCompatibilityTools.API;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -7,6 +8,7 @@ using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using ProducerExample.Helpers;
+using StardewValley.Internal;
 
 namespace ProducerExample
 {
@@ -23,6 +25,12 @@ namespace ProducerExample
             ModMonitor = Monitor;
 
             Helper.Events.GameLoop.GameLaunched += OnGameLaunched;
+        }
+
+        private void Tester(Delegate obj)
+        {
+            Log.Debug("tester");
+            obj.DynamicInvoke();
         }
 
         private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
@@ -45,6 +53,8 @@ namespace ProducerExample
             }
             
             Log.Info("Successfully registered BookAction.");
+            
+            Tester(TestAction);
         }
         
         public void TestAction()

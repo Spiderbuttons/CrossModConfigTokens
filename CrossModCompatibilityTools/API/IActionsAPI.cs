@@ -22,6 +22,18 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <returns>A bool indicating whether the Action was registered successfully.</returns>
     /// <remarks>All Action IDs will be automatically prefixed with the UniqueID found in the <c>manifest</c>. There is no need to add it yourself.</remarks>
     bool TryRegisterAction(IManifest manifest, string actionId, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData, [NotNullWhen(false)] out string? error);
+
+    /// <summary>
+    /// Try to register an Action with Cross-Mod Compatibility Tools.
+    /// </summary>
+    /// <param name="manifest">The manifest of the mod you want to register the Action for.</param>
+    /// <param name="actionId">The ID you want to give to the Action you are registering.</param>
+    /// <param name="name">A user-facing name for this action.</param>
+    /// <param name="description">A user-facing description explaining what this action is meant to do or how it is meant to be used.</param>
+    /// <param name="action">The Action you want to register.</param>
+    /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
+    /// <returns>A bool indicating whether the Action was registered successfully.</returns>
+    bool TryRegisterAction(IManifest manifest, string actionId, Func<string> name, Func<string> description, Action action, [NotNullWhen(false)] out string? error);
     
     /// <summary>
     /// Try to register an Action with Cross-Mod Compatibility Tools.
@@ -128,6 +140,16 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="customData">Optional. A class object of custom data you want to attach to the Action. You should explain your class structure in your documentation if you want others to use this custom data.</param>
     /// <remarks>All Action IDs will be automatically prefixed with the UniqueID found in the <c>manifest</c>. There is no need to add it yourself.</remarks>
     void RegisterAction(IManifest manifest, string actionId, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData);
+    
+    /// <summary>
+    /// Register an Action with Cross-Mod Compatibility Tools.
+    /// </summary>
+    /// <param name="manifest">The manifest of the mod you want to register the Action for.</param>
+    /// <param name="actionId">The ID you want to give to the Action you are registering.</param>
+    /// <param name="name">Optional. A user-facing name for this action.</param>
+    /// <param name="description">Optional. A user-facing description explaining what this action is meant to do or how it is meant to be used.</param>
+    /// <param name="action"></param>
+    void RegisterAction(IManifest manifest, string actionId, Func<string>? name, Func<string>? description, Action action);
 
     /// <summary>
     /// Register an Action with Cross-Mod Compatibility Tools.
