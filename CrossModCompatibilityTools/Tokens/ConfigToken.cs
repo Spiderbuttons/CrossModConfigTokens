@@ -56,7 +56,7 @@ namespace CrossModCompatibilityTools.Tokens
                              [];
             if (split.Length != 2)
             {
-                error = "[Spiderbuttons.CMCT/Config] Expected two input arguments (UniqueID and Config Name).";
+                error = $"[Spiderbuttons.CMCT/Config] Expected two input arguments (UniqueID and Config Name) but found {split.Length} in input '{input}'";
                 ModEntry.ModMonitor.LogOnce(error, LogLevel.Warn);
                 return false;
             }

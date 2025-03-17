@@ -55,7 +55,7 @@ namespace CrossModCompatibilityTools.Tokens
             string[] split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ?? [];
             if (split.Length != 2)
             {
-                error = "[Spiderbuttons.CMCT/InternalAsset] Expected two input arguments (UniqueID and Asset Path).";
+                error = $"[Spiderbuttons.CMCT/InternalAsset] Expected two input arguments (UniqueID and Asset Path) but found {split.Length} in input '{input}'";
                 ModEntry.ModMonitor.LogOnce(error, LogLevel.Warn);
                 return false;
             }
