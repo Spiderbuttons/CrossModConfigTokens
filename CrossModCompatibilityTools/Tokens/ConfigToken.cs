@@ -117,6 +117,8 @@ namespace CrossModCompatibilityTools.Tokens
 
             var uniqueId = split[0];
             var configKey = split[1];
+            
+            // TODO: Handle comma-separated lists of config values.
 
             string? error = null;
             if (ConfigCache.TryGetValue(uniqueId, out var modConfig) && modConfig.TryGetConfig<string>(configKey, out var config, out error))
