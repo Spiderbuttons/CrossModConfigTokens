@@ -23,7 +23,7 @@ public static class Registrar
         actions = null;
         if (!ModActions.Any())
         {
-            error = "No actions registered";
+            error = "No actions registered.";
             return false;
         }
         
@@ -42,7 +42,7 @@ public static class Registrar
 
         if (!actions.TryAdd(action.Id, action))
         {
-            error = $"Action '{action.Id}' is already registered with Cross-Mod Compatibility Tools";
+            error = $"Action '{action.Id}' is already registered with Cross-Mod Compatibility Tools.";
             return false;
         }
 
@@ -68,7 +68,7 @@ public static class Registrar
             
             if (action is null)
             {
-                error = $"Action with ID '{actionId}' not found for mod with UniqueID '{mod.Manifest.UniqueID}'";
+                error = $"Action with ID '{actionId}' not found for mod with UniqueID '{mod.Manifest.UniqueID}'.";
                 return false;
             }
         }
@@ -92,20 +92,20 @@ public static class Registrar
         var type = assembly.GetType(typeName);
         if (type == null)
         {
-            error = $"Type '{typeName}' not found in assembly '{assembly.GetName().Name}'";
+            error = $"Type '{typeName}' not found in assembly '{assembly.GetName().Name}'.";
             return false;
         }
         
         var method = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
         if (method == null)
         {
-            error = $"Method '{methodName}' not found in type '{typeName}'";
+            error = $"Method '{methodName}' not found in type '{typeName}'.";
             return false;
         }
 
         if (!method.IsStatic)
         {
-            error = $"Method '{methodName}' is not static, unable to automatically register it as an action";
+            error = $"Method '{methodName}' is not static, unable to automatically register it as an action.";
             return false;
         }
         
@@ -136,7 +136,7 @@ public static class Registrar
         actions = null;
         if (!ModActions.TryGetValue(mod.Manifest.UniqueID, out actions))
         {
-            error = $"Mod with UniqueID '{mod.Manifest.UniqueID}' has no actions registered";
+            error = $"Mod with UniqueID '{mod.Manifest.UniqueID}' has no actions registered.";
             return false;
         }
         
@@ -157,7 +157,7 @@ public static class Registrar
         actionsList ??= modInstance.GetType().GetField("CMCTActions")?.GetValue(modInstance) ?? modInstance.GetType().GetProperty("CMCTActions")?.GetValue(modInstance);
         if (actionsList is not IDictionary<string, Action> list)
         {
-            error = $"Mod with UniqueID '{mod.Manifest.UniqueID}' has no actions registered";
+            error = $"Mod with UniqueID '{mod.Manifest.UniqueID}' has no actions registered.";
             return false;
         }
         

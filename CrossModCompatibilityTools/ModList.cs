@@ -49,7 +49,7 @@ public static class ModList
             return true;
         }
         
-        error = $"{uniqueId} is a content pack.";
+        error = $"{uniqueId} is a content pack";
         return false;
     }
     

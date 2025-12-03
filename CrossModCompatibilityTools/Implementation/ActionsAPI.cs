@@ -260,7 +260,7 @@ public class CrossModAction(ProxyManager<Nothing> proxyManager, IModInfo mod, st
     public string Id { get; } = $"{mod.Manifest.UniqueID}_{id}";
     public string Category { get; } = category ?? "None";
     public Func<string> Name { get; } = name ?? (() => Registrar.QualifyMethodName(action.Method));
-    public Func<string> Description { get; } = description ?? (() => "(No description provided.)");
+    public Func<string> Description { get; } = description ?? (() => "(No description provided)");
     public Action Action { get; } = action;
     public Dictionary<string, string>? CustomFields { get; } = customFields;
     public object? RawCustomData { get; } = customData;
