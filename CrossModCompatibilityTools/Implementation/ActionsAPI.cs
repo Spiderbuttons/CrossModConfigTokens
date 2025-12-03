@@ -22,7 +22,7 @@ public partial class CrossModCompatibilityToolsAPI(IModInfo modInfo) : ICrossMod
 
     public bool TryRegisterAction(string actionId, Func<string>? name, Func<string>? description, Action action, [NotNullWhen(false)] out string? error)
     {
-        throw new NotImplementedException();
+        return Registrar.TryRegisterAction(Registrant.Manifest, new CrossModAction(Registrar.ProxyManager, Registrant, actionId, null, name, description, action, null, null), out error);
     }
 
     public bool TryRegisterAction(Action action, [NotNullWhen(false)] out string? error)
@@ -163,7 +163,10 @@ public partial class CrossModCompatibilityToolsAPI(IModInfo modInfo) : ICrossMod
 
     public void RegisterAction(string actionId, Func<string>? name, Func<string>? description, Action action)
     {
-        throw new NotImplementedException();
+        if (!TryRegisterAction(actionId, name, description, action, out var error))
+        {
+            Log.Error(error);
+        }
     }
 
     public void RegisterAction(Action action)
