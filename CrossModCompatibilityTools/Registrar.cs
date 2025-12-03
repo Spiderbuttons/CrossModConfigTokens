@@ -178,11 +178,14 @@ public static class Registrar
     
     private static ProxyManager<Nothing> CreateProxyManager()
     {
-        var assemblyBuilder =
-            AssemblyBuilder.DefineDynamicAssembly(new($"CrossModAPI.Proxies, Version=1.0.0.0, Culture=neutral"),
+        var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName($"CrossModCompatibilityTools.Proxies, Version={Assembly.GetExecutingAssembly().GetName().Version}, Culture=neutral"),
                 AssemblyBuilderAccess.Run);
         var moduleBuilder = assemblyBuilder.DefineDynamicModule("Proxies");
         return new ProxyManager<Nothing>(moduleBuilder,
-            new ProxyManagerConfiguration<Nothing> { AccessLevelChecking = AccessLevelChecking.DisabledButOnlyAllowPublicMembers });
+            new ProxyManagerConfiguration<Nothing>
+            {
+                AccessLevelChecking = AccessLevelChecking.DisabledButOnlyAllowPublicMembers, 
+                EnumMappingBehavior = ProxyManagerEnumMappingBehavior.ThrowAtRuntime
+            });
     }
 }

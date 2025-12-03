@@ -20,8 +20,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         return Registrar.TryRegisterAction(manifest, new CrossModAction(Registrar.ProxyManager, modInfo, actionId, category, name, description, action, customFields, customData), out error);
     }
 
-    public bool TryRegisterAction(IManifest manifest, string actionId, Func<string> name, Func<string> description, Action action,
-        out string? error)
+    public bool TryRegisterAction(IManifest manifest, string actionId, Func<string> name, Func<string> description, Action action, [NotNullWhen(false)] out string? error)
     {
         throw new NotImplementedException();
     }
@@ -257,7 +256,7 @@ public class CrossModAction(ProxyManager<Nothing> proxyManager, IModInfo mod, st
 {
     public IModInfo Mod { get; } = mod;
     public string Id { get; } = id;
-    public string Category { get; } = category ?? "Default";
+    public string Category { get; } = category ?? "None";
     public Func<string> Name { get; } = name ?? (() => Registrar.QualifyMethodName(action.Method));
     public Func<string> Description { get; } = description ?? (() => "(No description provided.)");
     public Action Action { get; } = action;

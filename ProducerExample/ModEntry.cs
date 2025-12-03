@@ -37,9 +37,16 @@ namespace ProducerExample
         {
             api = Helper.ModRegistry.GetApi<ICrossModCompatibilityToolsAPI>("Spiderbuttons.CMCT")!;
 
-            if (!api.TryRegisterAction(ModManifest, "TestAction", "Test", () => "The name of this action goes here.",
-                    () => "This action logs a little test log to the SMAPI console!", () => Log.Error("This doesn't do much."), null,
-                    new TestData("UniqueId/AssetName", () => "An icon for my whatever.", null), out var error))
+            if (!api.TryRegisterAction(
+                    manifest: ModManifest,
+                    actionId: "TestAction",
+                    category: "Test",
+                    name: () => "The name of this action goes here.",
+                    description: () => "This action logs a little test log to the SMAPI console!",
+                    action: () => Log.Error("This doesn't do much."),
+                    customFields: null,
+                    customData: new TestData("UniqueId/AssetName", () => "An icon for my whatever.", null),
+                    error: out var error))
             {
                 Log.Error(error);
             }
