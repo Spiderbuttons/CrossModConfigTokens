@@ -15,7 +15,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
 {
     private static Dictionary<string, object> ConfigClassCache { get; } = new();
     
-    public bool TryGetConfigValue(IModInfo mod, string configKey, [NotNullWhen(true)] out string? configValue, out string? error)
+    public bool TryGetConfigValue(IModInfo mod, string configKey, [NotNullWhen(true)] out string? configValue, [NotNullWhen(false)] out string? error)
     {
         configValue = null;
         error = null;
@@ -26,7 +26,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         return true;
     }
 
-    public bool TryGetConfigValue<T>(IModInfo mod, string configKey, [NotNullWhen(true)] out T? configValue, out string? error)
+    public bool TryGetConfigValue<T>(IModInfo mod, string configKey, [NotNullWhen(true)] out T? configValue, [NotNullWhen(false)] out string? error)
     {
         configValue = default;
         error = null;
@@ -37,7 +37,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         return true;
     }
     
-    public bool TryGetConfig(IModInfo mod, [NotNullWhen(true)] out Dictionary<string, object>? configObject, out string? error)
+    public bool TryGetConfig(IModInfo mod, [NotNullWhen(true)] out Dictionary<string, object>? configObject, [NotNullWhen(false)] out string? error)
     {
         configObject = null;
         error = null;
@@ -56,7 +56,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         return true;
     }
     
-    public bool TryGetConfigJObject(IModInfo mod, [NotNullWhen(true)] out JObject? configObject, out string? error)
+    public bool TryGetConfigJObject(IModInfo mod, [NotNullWhen(true)] out JObject? configObject, [NotNullWhen(false)] out string? error)
     {
         configObject = null;
         error = null;
@@ -67,7 +67,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         return true;
     }
 
-    public bool TryGetConfigClass(IModInfo mod, [NotNullWhen(true)] out object? configClass, out string? error)
+    public bool TryGetConfigClass(IModInfo mod, [NotNullWhen(true)] out object? configClass, [NotNullWhen(false)] out string? error)
     {
         error = null;
         configClass = null;

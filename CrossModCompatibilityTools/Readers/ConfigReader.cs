@@ -44,7 +44,7 @@ public static class ConfigReader
         }
     }
     
-    public static bool TryGetModConfig(string uniqueId, [NotNullWhen(true)] out JObject? config, out string? error)
+    public static bool TryGetModConfig(string uniqueId, [NotNullWhen(true)] out JObject? config, [NotNullWhen(false)] out string? error)
     {
         config = null;
         error = null;
@@ -85,12 +85,12 @@ public static class ConfigReader
         return false;
     }
     
-    public static bool TryGetModConfig(IModInfo mod, [NotNullWhen(true)] out JObject? config, out string? error)
+    public static bool TryGetModConfig(IModInfo mod, [NotNullWhen(true)] out JObject? config, [NotNullWhen(false)] out string? error)
     {
         return TryGetModConfig(mod.Manifest.UniqueID, out config, out error);
     }
     
-    public static bool TryGetModConfigValue<T>(string uniqueId, string key, [NotNullWhen(true)] out T? value, out string? error)
+    public static bool TryGetModConfigValue<T>(string uniqueId, string key, [NotNullWhen(true)] out T? value, [NotNullWhen(false)] out string? error)
     {
         value = default;
         error = null;
