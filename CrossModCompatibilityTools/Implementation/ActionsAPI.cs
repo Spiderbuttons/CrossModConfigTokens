@@ -16,7 +16,6 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
     public bool TryRegisterAction(IManifest manifest, string actionId, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData, [NotNullWhen(false)] out string? error)
     {
         var modInfo = ModEntry.ModHelper.ModRegistry.Get(manifest.UniqueID)!;
-        actionId = $"{modInfo.Manifest.UniqueID}_{actionId}";
         return Registrar.TryRegisterAction(manifest, new CrossModAction(Registrar.ProxyManager, modInfo, actionId, category, name, description, action, customFields, customData), out error);
     }
 
@@ -27,8 +26,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
 
     public bool TryRegisterAction(IManifest manifest, Action action, [NotNullWhen(false)] out string? error)
     {
-        var actionId = $"{manifest.UniqueID}_{action.Method.Name}";
-        return Registrar.TryRegisterAction(manifest, new CrossModAction(Registrar.ProxyManager, ModEntry.ModHelper.ModRegistry.Get(manifest.UniqueID)!, actionId, null, null, null, action, null, null), out error);
+        return Registrar.TryRegisterAction(manifest, new CrossModAction(Registrar.ProxyManager, ModEntry.ModHelper.ModRegistry.Get(manifest.UniqueID)!, action.Method.Name, null, null, null, action, null, null), out error);
     }
 
     public bool TryGetActionFromMod(IModInfo mod, string actionId, [NotNullWhen(true)] out ICrossModAction? action, out string? error, bool reflectIfNecessary = false)
@@ -255,7 +253,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
 public class CrossModAction(ProxyManager<Nothing> proxyManager, IModInfo mod, string id, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData) : ICrossModAction
 {
     public IModInfo Mod { get; } = mod;
-    public string Id { get; } = id;
+    public string Id { get; } = $"{mod.Manifest.UniqueID}_{id}";
     public string Category { get; } = category ?? "None";
     public Func<string> Name { get; } = name ?? (() => Registrar.QualifyMethodName(action.Method));
     public Func<string> Description { get; } = description ?? (() => "(No description provided.)");

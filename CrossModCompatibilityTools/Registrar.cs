@@ -23,7 +23,7 @@ public static class Registrar
         actions = null;
         if (!ModActions.Any())
         {
-            error = "No actions registered";
+            error = "No actions registered.";
             return false;
         }
         
