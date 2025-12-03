@@ -40,9 +40,9 @@ namespace CrossModCompatibilityTools
                 this.LogActions);
         }
 
-        public override object GetApi()
+        public override object GetApi(IModInfo modInfo)
         {
-            return new CrossModCompatibilityToolsAPI();
+            return new CrossModCompatibilityToolsAPI(modInfo);
         }
 
         private void LogActions(string command, string[] args)

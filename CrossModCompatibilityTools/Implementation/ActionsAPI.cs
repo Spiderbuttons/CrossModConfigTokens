@@ -11,22 +11,23 @@ using StardewValley.Extensions;
 
 namespace CrossModCompatibilityTools.Implementation;
 
-public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityToolsAPI
+public partial class CrossModCompatibilityToolsAPI(IModInfo modInfo) : ICrossModCompatibilityToolsAPI
 { 
-    public bool TryRegisterAction(IManifest manifest, string actionId, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData, [NotNullWhen(false)] out string? error)
+    private IModInfo Registrant { get; } = modInfo;
+    
+    public bool TryRegisterAction(string actionId, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData, [NotNullWhen(false)] out string? error)
     {
-        var modInfo = ModEntry.ModHelper.ModRegistry.Get(manifest.UniqueID)!;
-        return Registrar.TryRegisterAction(manifest, new CrossModAction(Registrar.ProxyManager, modInfo, actionId, category, name, description, action, customFields, customData), out error);
+        return Registrar.TryRegisterAction(Registrant.Manifest, new CrossModAction(Registrar.ProxyManager, Registrant, actionId, category, name, description, action, customFields, customData), out error);
     }
 
-    public bool TryRegisterAction(IManifest manifest, string actionId, Func<string> name, Func<string> description, Action action, [NotNullWhen(false)] out string? error)
+    public bool TryRegisterAction(string actionId, Func<string>? name, Func<string>? description, Action action, [NotNullWhen(false)] out string? error)
     {
         throw new NotImplementedException();
     }
 
-    public bool TryRegisterAction(IManifest manifest, Action action, [NotNullWhen(false)] out string? error)
+    public bool TryRegisterAction(Action action, [NotNullWhen(false)] out string? error)
     {
-        return Registrar.TryRegisterAction(manifest, new CrossModAction(Registrar.ProxyManager, ModEntry.ModHelper.ModRegistry.Get(manifest.UniqueID)!, action.Method.Name, null, null, null, action, null, null), out error);
+        return Registrar.TryRegisterAction(Registrant.Manifest, new CrossModAction(Registrar.ProxyManager, Registrant, action.Method.Name, null, null, null, action, null, null), out error);
     }
 
     public bool TryGetActionFromMod(IModInfo mod, string actionId, [NotNullWhen(true)] out ICrossModAction? action, out string? error, bool reflectIfNecessary = false)
@@ -152,22 +153,22 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         }
     }
 
-    public void RegisterAction(IManifest manifest, string actionId, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData)
+    public void RegisterAction(string actionId, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData)
     {
-        if (!TryRegisterAction(manifest, actionId, category, name, description, action, customFields, customData, out var error))
+        if (!TryRegisterAction(actionId, category, name, description, action, customFields, customData, out var error))
         {
             Log.Error(error);
         }
     }
 
-    public void RegisterAction(IManifest manifest, string actionId, Func<string>? name, Func<string>? description, Action action)
+    public void RegisterAction(string actionId, Func<string>? name, Func<string>? description, Action action)
     {
         throw new NotImplementedException();
     }
 
-    public void RegisterAction(IManifest manifest, Action action)
+    public void RegisterAction(Action action)
     {
-        if (!TryRegisterAction(manifest, action, out var error))
+        if (!TryRegisterAction(action, out var error))
         {
             Log.Error(error);
         }

@@ -23,7 +23,7 @@ public static class Registrar
         actions = null;
         if (!ModActions.Any())
         {
-            error = "No actions registered.";
+            error = "No actions registered";
             return false;
         }
         
@@ -42,7 +42,7 @@ public static class Registrar
 
         if (!actions.TryAdd(action.Id, action))
         {
-            error = $"Action '{action.Id}' is already registered with Cross-Mod Compatibility Tools.";
+            error = $"Action '{action.Id}' is already registered with Cross-Mod Compatibility Tools";
             return false;
         }
 
