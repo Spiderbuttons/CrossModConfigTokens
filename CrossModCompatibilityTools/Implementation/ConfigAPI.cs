@@ -49,7 +49,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
         configObject = config.ToObject<Dictionary<string, object>>();
         if (configObject == null)
         {
-            error = $"Failed to parse config from mod with UniqueID '{mod.Manifest.UniqueID}' as Dictionary<string, object>";
+            error = $"Failed to parse config from mod with UniqueID '{mod.Manifest.UniqueID}' as Dictionary<string, object>.";
             return false;
         }
         
@@ -94,7 +94,7 @@ public partial class CrossModCompatibilityToolsAPI : ICrossModCompatibilityTools
             return true;
         }
         
-        error = $"Failed to find config class for mod with UniqueID '{mod.Manifest.UniqueID}'";
+        error = $"Failed to find config class for mod with UniqueID '{mod.Manifest.UniqueID}'.";
         return false;
     }
 
