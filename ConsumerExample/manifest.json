@@ -1,0 +1,19 @@
+{
+    "Name": "ConsumerExample",
+    "Author": "Spiderbuttons",
+    "Version": "1.0.0",
+    "Description": "A template for a Stardew Valley mod.",
+    "UniqueID": "Spiderbuttons.ConsumerExample",
+    "EntryDll": "ConsumerExample.dll",
+    "UpdateKeys": [],
+    "Dependencies": [
+        {
+            "UniqueID": "Spiderbuttons.ProducerExample",
+            "MinimumVersion": "1.0.0"
+        },
+        {
+            "UniqueID": "Spiderbuttons.CMCT",
+            "MinimumVersion": "1.0.0"
+        }
+    ]
+}

@@ -16,7 +16,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="configValue">The value read from the <c>config.json</c>, or <c>null</c> if it isn't found.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the config value was successfully found.</returns>
-    bool TryGetConfigValue(IModInfo mod, string configKey, [NotNullWhen(true)] out string? configValue, out string? error);
+    bool TryGetConfigValue(IModInfo mod, string configKey, [NotNullWhen(true)] out string? configValue, [NotNullWhen(false)] out string? error);
     
     /// <summary>
     /// Try to get the value of a specific config option from a specific mod as a specific type.
@@ -31,7 +31,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     ///     <para>Simple types like bools, ints, floats, etc. should parse fine, as well as any type with a <c>Parse(string)</c> or <c>TryParse(string, out object, out object)</c> method. Otherwise, you will need to use the non-generic version of this method to get the string value and parse it yourself.
     ///     </para>
     /// </remarks>
-    bool TryGetConfigValue<T>(IModInfo mod, string configKey, [NotNullWhen(true)] out T? configValue, out string? error);
+    bool TryGetConfigValue<T>(IModInfo mod, string configKey, [NotNullWhen(true)] out T? configValue, [NotNullWhen(false)] out string? error);
 
     /// <summary>
     /// Try to get the entire config object from a specific mod as a Dictionary of strings to objects.
@@ -40,7 +40,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="configObject">The config object read from the <c>config.json</c>, or <c>null</c> if it isn't found.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the config object was successfully found.</returns>
-    bool TryGetConfig(IModInfo mod, [NotNullWhen(true)] out Dictionary<string, object>? configObject, out string? error);
+    bool TryGetConfig(IModInfo mod, [NotNullWhen(true)] out Dictionary<string, object>? configObject, [NotNullWhen(false)] out string? error);
 
     /// <summary>
     /// Try to get the entire config object from a specific mod as a Newtonsoft.Json JObject.
@@ -50,7 +50,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the config object was successfully found.</returns>
     /// <remarks>You will need a reference to Newtonsoft.Json to use this method.</remarks>
-    bool TryGetConfigJObject(IModInfo mod, [NotNullWhen(true)] out JObject? configObject, out string? error);
+    bool TryGetConfigJObject(IModInfo mod, [NotNullWhen(true)] out JObject? configObject, [NotNullWhen(false)] out string? error);
 
     /// <summary>
     /// Try to get the actual config class from a specific mod.
@@ -60,7 +60,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the config class was successfully found.</returns>
     /// <remarks>This will only look inside a mod's entry class for a field or property that holds their config class.</remarks>
-    bool TryGetConfigClass(IModInfo mod, [NotNullWhen(true)] out object? configClass, out string? error);
+    bool TryGetConfigClass(IModInfo mod, [NotNullWhen(true)] out object? configClass, [NotNullWhen(false)] out string? error);
     
     /* */
     

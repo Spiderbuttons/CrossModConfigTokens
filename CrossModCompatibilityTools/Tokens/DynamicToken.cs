@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using CrossModCompatibilityTools.Helpers;
 using CrossModCompatibilityTools.Readers;
+using StardewModdingAPI;
 
 namespace CrossModCompatibilityTools.Tokens
 {
@@ -54,19 +56,22 @@ namespace CrossModCompatibilityTools.Tokens
                              [];
             if (split.Length != 2)
             {
-                error = "[Spiderbuttons.CMCT/Dynamic] Expected two input arguments (UniqueID and DynamicToken Name).";
+                error = $"[Spiderbuttons.CMCT/Dynamic] Expected two input arguments (UniqueID and DynamicToken Name) but found {split.Length} in input '{input}'";
+                ModEntry.ModMonitor.LogOnce(error, LogLevel.Warn);
                 return false;
             }
 
             if (!ModList.TryGetContentPack(split[0], out var _, out error))
             {
                 error = $"[Spiderbuttons.CMCT/Dynamic] Content Patcher content pack '{split[0]}' not found.";
+                ModEntry.ModMonitor.LogOnce(error, LogLevel.Warn);
                 return false;
             }
             
             if (!DynamicReader.DynamicCache.TryGetValue(split[0], out var cache) || !cache.TryGetValues(split[1], out _, out error))
             {
                 error = $"[Spiderbuttons.CMCT/Dynamic] DynamicToken '{split[1]}' not found in content pack '{split[0]}'.";
+                ModEntry.ModMonitor.LogOnce(error, LogLevel.Warn);
                 return false;
             }
 
@@ -102,13 +107,14 @@ namespace CrossModCompatibilityTools.Tokens
             var name = split[1];
 
             // Still can't figure out how to do this with a cache. The token is always late by a day if I don't grab it uncached...
-            if (DynamicReader.DynamicCache.TryGetValue(uniqueId, out var manager) && manager.TryGetValuesNoCache(name, out var values, out _))
+            string? error = null;
+            if (DynamicReader.DynamicCache.TryGetValue(uniqueId, out var manager) && manager.TryGetValuesNoCache(name, out var values, out error))
             {
                 foreach (var value in values)
                 {
                     yield return value;
                 }
-            }
+            } else Log.Warn($"Unable to retrieve dynamic token '{name}' from mod '{uniqueId}': {error}");
         }
     }
 }

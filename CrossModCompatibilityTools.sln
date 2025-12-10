@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrossModCompatibilityTools", "CrossModCompatibilityTools\CrossModCompatibilityTools.csproj", "{2F306224-1075-4EB0-906F-23661912BE31}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProducerExample", "ProducerExample\ProducerExample.csproj", "{EBCF0F9D-585C-44FF-9AFE-E550A86EA2C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsumerExample", "ConsumerExample\ConsumerExample.csproj", "{B345E386-74A7-4D62-9864-6AC696AE969C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{2F306224-1075-4EB0-906F-23661912BE31}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F306224-1075-4EB0-906F-23661912BE31}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F306224-1075-4EB0-906F-23661912BE31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBCF0F9D-585C-44FF-9AFE-E550A86EA2C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBCF0F9D-585C-44FF-9AFE-E550A86EA2C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBCF0F9D-585C-44FF-9AFE-E550A86EA2C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBCF0F9D-585C-44FF-9AFE-E550A86EA2C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B345E386-74A7-4D62-9864-6AC696AE969C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B345E386-74A7-4D62-9864-6AC696AE969C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B345E386-74A7-4D62-9864-6AC696AE969C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B345E386-74A7-4D62-9864-6AC696AE969C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

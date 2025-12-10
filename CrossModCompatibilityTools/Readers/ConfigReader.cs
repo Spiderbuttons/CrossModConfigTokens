@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Newtonsoft.Json.Linq;
 using StardewModdingAPI;
 using StardewValley.Extensions;
@@ -9,6 +10,9 @@ namespace CrossModCompatibilityTools.Readers;
 
 public static class ConfigReader
 {
+    public static Dictionary<Type, MethodInfo> ParseMethodCache { get; } = new();
+    public static Dictionary<Type, MethodInfo> TryParseMethodCache { get; } = new();
+    
     public class ModConfigManager(string uniqueId)
     {
         private string ModId { get; } = uniqueId;
@@ -44,7 +48,7 @@ public static class ConfigReader
         }
     }
     
-    public static bool TryGetModConfig(string uniqueId, [NotNullWhen(true)] out JObject? config, out string? error)
+    public static bool TryGetModConfig(string uniqueId, [NotNullWhen(true)] out JObject? config, [NotNullWhen(false)] out string? error)
     {
         config = null;
         error = null;
@@ -85,12 +89,12 @@ public static class ConfigReader
         return false;
     }
     
-    public static bool TryGetModConfig(IModInfo mod, [NotNullWhen(true)] out JObject? config, out string? error)
+    public static bool TryGetModConfig(IModInfo mod, [NotNullWhen(true)] out JObject? config, [NotNullWhen(false)] out string? error)
     {
         return TryGetModConfig(mod.Manifest.UniqueID, out config, out error);
     }
     
-    public static bool TryGetModConfigValue<T>(string uniqueId, string key, [NotNullWhen(true)] out T? value, out string? error)
+    public static bool TryGetModConfigValue<T>(string uniqueId, string key, [NotNullWhen(true)] out T? value, [NotNullWhen(false)] out string? error)
     {
         value = default;
         error = null;
@@ -120,9 +124,11 @@ public static class ConfigReader
         
         try
         {
-            if (typeof(T).GetMethod("Parse") is { } parseMethod && parseMethod.GetParameters()[0].ParameterType.Name.EqualsIgnoreCase("string"))
+            bool foundInCache;
+            if ((foundInCache = ParseMethodCache.ContainsKey(typeof(T))) || typeof(T).GetMethod("Parse", [typeof(string)]) is not null)
             {
-                var result = parseMethod.Invoke(null, new object?[] { currentValue.ToString() });
+                if (!foundInCache) ParseMethodCache.TryAdd(typeof(T), typeof(T).GetMethod("Parse", [typeof(string)])!);
+                var result = ParseMethodCache[typeof(T)].Invoke(null, [currentValue.ToString()]);
                 if (result is null or false)
                 {
                     error = $"Failed to parse value of key '{key}' in {uniqueId}'s config as type {typeof(T)}.";
@@ -133,10 +139,11 @@ public static class ConfigReader
                 return true;
             }
             
-            if (typeof(T).GetMethod("TryParse") is { } tryParseMethod && tryParseMethod.GetParameters()[0].ParameterType.Name.EqualsIgnoreCase("string"))
+            if ((foundInCache = TryParseMethodCache.ContainsKey(typeof(T))) || typeof(T).GetMethod("TryParse", [typeof(string), typeof(T).MakeByRefType()]) is not null)
             {
-                object?[] args = [currentValue.ToString(), default, default];
-                var result = tryParseMethod.Invoke(null, args);
+                if (!foundInCache) TryParseMethodCache.TryAdd(typeof(T), typeof(T).GetMethod("TryParse", [typeof(string), typeof(T).MakeByRefType()])!);
+                object?[] args = [currentValue.ToString(), null];
+                var result = TryParseMethodCache[typeof(T)].Invoke(null, args);
                 if (result is null or false)
                 {
                     error = $"Failed to parse value of key '{key}' in {uniqueId}'s config as type {typeof(T)}.";

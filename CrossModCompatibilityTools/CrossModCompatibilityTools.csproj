@@ -17,10 +17,15 @@
         <OutputPath>bin\Debug</OutputPath>
     </PropertyGroup>
 
+<!--    <PropertyGroup>-->
+<!--        <GenerateDocumentationFile>true</GenerateDocumentationFile>-->
+<!--    </PropertyGroup>-->
+
     <ItemGroup>
         <PackageReference Include="Krafs.Publicizer" Version="2.2.1">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
+        <PackageReference Include="Pintail" Version="2.6.1" PrivateAssets="False" />
         <Publicize Include="StardewModdingAPI" />
         <Reference Include="Newtonsoft.Json" Private="False">
             <HintPath>$(GamePath)\smapi-internal\Newtonsoft.Json.dll</HintPath>

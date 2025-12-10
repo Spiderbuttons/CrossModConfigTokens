@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using CrossModCompatibilityTools.Helpers;
 using CrossModCompatibilityTools.Readers;
+using StardewModdingAPI;
 
 namespace CrossModCompatibilityTools.Tokens
 {
@@ -53,19 +55,22 @@ namespace CrossModCompatibilityTools.Tokens
             string[] split = input?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim()).ToArray() ?? [];
             if (split.Length != 2)
             {
-                error = "[Spiderbuttons.CMCT/InternalAsset] Expected two input arguments (UniqueID and Asset Path).";
+                error = $"[Spiderbuttons.CMCT/InternalAsset] Expected two input arguments (UniqueID and Asset Path) but found {split.Length} in input '{input}'";
+                ModEntry.ModMonitor.LogOnce(error, LogLevel.Warn);
                 return false;
             }
 
             if (!ModList.TryGetModMetadata(split[0], out _, out error))
             {
                 error = $"[Spiderbuttons.CMCT/InternalAsset] Mod or Content Pack '{split[0]}' not found.";
+                ModEntry.ModMonitor.LogOnce(error, LogLevel.Warn);
                 return false;
             }
             
             if (!AssetCache[split[0]].TryGetValue(split[1], out _, out error))
             {
                 error = $"[Spiderbuttons.CMCT/InternalAsset] Asset with path '{split[1]}' not found in mod or content pack '{split[0]}'.";
+                ModEntry.ModMonitor.LogOnce(error, LogLevel.Warn);
                 return false;
             }
 
@@ -111,11 +116,12 @@ namespace CrossModCompatibilityTools.Tokens
 
             var uniqueId = split[0];
             var path = split[1];
-            
-            if (AssetCache.TryGetValue(uniqueId, out var manager) && manager.TryGetValue(path, out var asset, out _))
+
+            string? error = null;
+            if (AssetCache.TryGetValue(uniqueId, out var manager) && manager.TryGetValue(path, out var asset, out error))
             {
                 yield return asset.BaseName;
-            }
+            } else Log.Warn($"Unable to retrieve internal asset with path '{path}' from mod '{uniqueId}': {error}");
         }
     }
 }
