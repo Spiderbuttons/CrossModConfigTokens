@@ -50,8 +50,7 @@ public partial class CrossModCompatibilityToolsAPI(IModInfo modInfo) : ICrossMod
         return true;
     }
 
-    public bool TryGetActionsFromModAsList(IModInfo mod,
-        [NotNullWhen(true)] out IReadOnlyList<ICrossModAction>? actions, [NotNullWhen(false)] out string? error)
+    public bool TryGetActionsFromModAsList(IModInfo mod, [NotNullWhen(true)] out IReadOnlyList<ICrossModAction>? actions, [NotNullWhen(false)] out string? error)
     {
         error = null;
         actions = null;
@@ -257,7 +256,7 @@ public partial class CrossModCompatibilityToolsAPI(IModInfo modInfo) : ICrossMod
 public class CrossModAction(ProxyManager<Nothing> proxyManager, IModInfo mod, string id, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData) : ICrossModAction
 {
     public IModInfo Mod { get; } = mod;
-    public string Id { get; } = $"{mod.Manifest.UniqueID}_{id}";
+    public string Id { get; } = id.StartsWith($"{mod.Manifest.UniqueID}_") ? id : $"{mod.Manifest.UniqueID}_{id}";
     public string Category { get; } = category ?? "None";
     public Func<string> Name { get; } = name ?? (() => Registrar.QualifyMethodName(action.Method));
     public Func<string> Description { get; } = description ?? (() => "(No description provided)");

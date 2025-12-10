@@ -10,28 +10,38 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <summary>
     /// Try to register an Action with Cross-Mod Compatibility Tools.
     /// </summary>
-    /// <param name="manifest">The manifest of the mod you want to register the Action for.</param>
     /// <param name="actionId">The ID you want to give to the Action you are registering.</param>
-    /// <param name="category">Optional. A user-defined category that this action belongs to. Arbitrary and up to you, but if you expect a certain mod to use your action, you may want to check if they expect any particular category. Defaults to <c>Default</c></param>
+    /// <param name="category">Optional. A user-defined category that this action belongs to. Arbitrary and up to you, but if you expect a certain mod to use your action, you may want to check if they expect any particular category. Defaults to <c>None</c></param>
     /// <param name="name">Optional. A user-facing name for this action. Defaults to the qualified name of the method.</param>
     /// <param name="description">Optional. A user-facing description explaining what this action is meant to do or how it is meant to be used. Defaults to <c>(No description provided.)</c></param>
     /// <param name="action">The Action you want to register.</param>
-    /// <param name="customData">Optional. A class object of custom data you want to attach to the Action. You should explain your class structure in your documentation if you want others to use this custom data.</param>
     /// <param name="customFields">Optional. A dictionary of custom fields you want to attach to the Action.</param>
+    /// /// <param name="customData">Optional. A class object of custom data you want to attach to the Action. You should explain your class structure in your documentation if you want others to use this custom data as they will need to create a matching interface to use it, much like you needed to in order to use this API.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the Action was registered successfully.</returns>
-    /// <remarks>All Action IDs are prefixed with the UniqueID found in <c>manifest</c>.</remarks>
-    bool TryRegisterAction(IManifest manifest, string actionId, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData, [NotNullWhen(false)] out string? error);
+    /// <remarks>All Action IDs will be automatically prefixed with your UniqueId in the form of <c>UniqueId_ActionId</c>. There is no need to add your UniqueId yourself.</remarks>
+    bool TryRegisterAction(string actionId, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData, [NotNullWhen(false)] out string? error);
+
+    /// <summary>
+    /// Try to register an Action with Cross-Mod Compatibility Tools.
+    /// </summary>
+    /// <param name="actionId">The ID you want to give to the Action you are registering. The ID will automatically be prefixed with the UniqueId from the given <c>manifest</c>.</param>
+    /// <param name="name">Optional. A user-facing name for this action. Defaults to the qualified name of the method.</param>
+    /// <param name="description">Optional. A user-facing description explaining what this action is meant to do or how it is meant to be used. Defaults to <c>(No description provided.)</c></param>
+    /// <param name="action">The Action you want to register.</param>
+    /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
+    /// <returns>A bool indicating whether the Action was registered successfully.</returns>
+    /// <remarks>All Action IDs will be automatically prefixed with your UniqueId in the form of <c>UniqueId_ActionId</c>. There is no need to add your UniqueId yourself.</remarks>
+    bool TryRegisterAction(string actionId, Func<string>? name, Func<string>? description, Action action, [NotNullWhen(false)] out string? error);
     
     /// <summary>
     /// Try to register an Action with Cross-Mod Compatibility Tools.
     /// </summary>
-    /// <param name="manifest">The manifest of the mod you want to register the Action for.</param>
     /// <param name="action">The Action you want to register.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the Action was registered successfully.</returns>
-    /// <remarks>The ID of the registered action will be <c>UniqueID_MethodName</c></remarks>
-    bool TryRegisterAction(IManifest manifest, Action action, [NotNullWhen(false)] out string? error);
+    /// <remarks>The ID of the registered action will be <c>YourUniqueID_MethodName</c></remarks>
+    bool TryRegisterAction(Action action, [NotNullWhen(false)] out string? error);
     
     /// <summary>
     /// Try to get an Action that another mod registered with Cross-Mod Compatibility Tools.
@@ -77,7 +87,7 @@ public partial interface ICrossModCompatibilityToolsAPI
     bool TryGetActionsByCategory(string category, [NotNullWhen(true)] out IReadOnlyList<ICrossModAction>? actions, [NotNullWhen(false)] out string? error);
 
     /// <summary>
-    /// Try to get all Actions registered with Cross-Mod Compatibility Tools.
+    /// Try to get all Actions registered with Cross-Mod Compatibility Tools as a dictionary.
     /// </summary>
     /// <param name="actions">A Dictionary, keyed by Action ID, of CrossModAction instances containing the Actions you want to get along with their metadata, or <c>null</c> if no Actions were found.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
@@ -85,10 +95,10 @@ public partial interface ICrossModCompatibilityToolsAPI
     bool TryGetActionsAsDict([NotNullWhen(true)] out IReadOnlyDictionary<string, ICrossModAction>? actions, [NotNullWhen(false)] out string? error);
 
     /// <summary>
-    /// Try to get all Actions registered with Cross-Mod Compatibility Tools.
+    /// Try to get all Actions registered with Cross-Mod Compatibility Tools as a list.
     /// </summary>
     /// <param name="actions">A List of CrossModAction instances containing the Actions you want to get along with their metadata, or <c>null</c> if no Actions were found.</param>
-    /// <param name="error"></param>
+    /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>
     /// <returns>A bool indicating whether the Actions were found.</returns>
     bool TryGetActionsAsList([NotNullWhen(true)] out IReadOnlyList<ICrossModAction>? actions, [NotNullWhen(false)] out string? error);
 
@@ -113,28 +123,38 @@ public partial interface ICrossModCompatibilityToolsAPI
     /// <param name="actionId">The ID of the Action you want to invoke.</param>
     /// <param name="error">The error indicating what went wrong, or <c>null</c> if everything went right.</param>  
     /// <returns>A bool indicating whether the Action was invoked successfully.</returns>
+    /// <remarks>Remember that all Action Ids are prefixed with a UniqueId.</remarks>
     bool TryInvokeActionById(string actionId, [NotNullWhen(false)] out string? error);
 
     /// <summary>
     /// Register an Action with Cross-Mod Compatibility Tools.
     /// </summary>
-    /// <param name="manifest">The manifest of the mod you want to register the Action for.</param>
     /// <param name="actionId">The ID you want to give to the Action you are registering.</param>
-    /// <param name="category">Optional. A user-defined category that this action belongs to. Arbitrary and up to you, but if you expect a certain mod to use your action, you may want to check if they expect any particular category. Defaults to <c>Default</c></param>
+    /// <param name="category">Optional. A user-defined category that this action belongs to. Arbitrary and up to you, but if you expect a certain mod to use your action, you may want to check if they expect any particular category. Defaults to <c>None</c></param>
     /// <param name="name">Optional. A user-facing name for this action. Defaults to the qualified name of the method.</param>
     /// <param name="description">Optional. A user-facing description explaining what this action is meant to do or how it is meant to be used. Defaults to <c>(No description provided.)</c></param>
     /// <param name="action">The Action you want to register.</param>
     /// <param name="customFields">Optional. A dictionary of custom fields you want to attach to the Action.</param>
-    /// <param name="customData">Optional. A class object of custom data you want to attach to the Action. You should explain your class structure in your documentation if you want others to use this custom data.</param>
-    void RegisterAction(IManifest manifest, string actionId, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData);
+    /// <param name="customData">Optional. A class object of custom data you want to attach to the Action. You should explain your class structure in your documentation if you want others to use this custom data as they will need to create a matching interface to use it, much like you needed to in order to use this API.</param>
+    /// <remarks>All Action IDs will be automatically prefixed with your UniqueId in the form of <c>UniqueId_ActionId</c>. There is no need to add your UniqueId yourself.</remarks>
+    void RegisterAction(string actionId, string? category, Func<string>? name, Func<string>? description, Action action, Dictionary<string, string>? customFields, object? customData);
+    
+    /// <summary>
+    /// Register an Action with Cross-Mod Compatibility Tools.
+    /// </summary>
+    /// <param name="actionId">The ID you want to give to the Action you are registering.</param>
+    /// <param name="name">Optional. A user-facing name for this action.</param>
+    /// <param name="description">Optional. A user-facing description explaining what this action is meant to do or how it is meant to be used.</param>
+    /// <param name="action">The Action you want to register.</param>
+    /// <remarks>All Action IDs will be automatically prefixed with your UniqueId in the form of <c>UniqueId_ActionId</c>. There is no need to add your UniqueId yourself.</remarks>
+    void RegisterAction(string actionId, Func<string>? name, Func<string>? description, Action action);
 
     /// <summary>
     /// Register an Action with Cross-Mod Compatibility Tools.
     /// </summary>
-    /// <param name="manifest">The manifest of the mod you want to register the Action for.</param>
     /// <param name="action">The Action you want to register.</param>
-    /// <remarks>The ID of the registered action will be <c>UniqueID_MethodName</c></remarks>
-    void RegisterAction(IManifest manifest, Action action);
+    /// <remarks>The ID of the registered action will be <c>YourUniqueID_MethodName</c></remarks>
+    void RegisterAction(Action action);
     
     /// <summary>
     /// Get an Action that another mod registered with Cross-Mod Compatibility Tools.
@@ -209,28 +229,27 @@ public partial interface ICrossModCompatibilityToolsAPI
 public interface ICrossModAction
 {
     /// <summary>
-    /// The IModInfo corresponding to the mod that registered this CrossModAction.
+    /// The IModInfo for the mod that registered this CrossModAction.
     /// </summary>
     public IModInfo Mod { get; }
     
     /// <summary>
-    /// The ID of this registered action.
+    /// The ID of this registered action. This will be prefixed with the UniqueId of its <c>Mod</c>.
     /// </summary>
     public string Id { get; }
     
     /// <summary>
-    /// The user-defined category that this action belongs to. Arbitrary and up to you, but if you expect a certain mod to use your action, you may want to check if they expect any particular category. 
+    /// The user-defined category that this action belongs to. 
     /// </summary>
-    /// <remarks>Defaults to <c>None</c>.</remarks>
     public string Category { get; }
     
     /// <summary>
-    /// Optional. A user-facing name for this action. Defaults to the qualified name of the method if none is given.
+    /// The user-facing name for this action.
     /// </summary>
     public Func<string> Name { get; }
     
     /// <summary>
-    /// Optional. A user-facing description explaining what this action is meant to do or how it is meant to be used.
+    /// The user-facing description explaining what this action is meant to do or how it is meant to be used.
     /// </summary>
     public Func<string> Description { get; }
     

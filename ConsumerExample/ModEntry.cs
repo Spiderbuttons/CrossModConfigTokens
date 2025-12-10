@@ -30,6 +30,7 @@ namespace ConsumerExample
             Helper.Events.GameLoop.GameLaunched += this.OnGameLaunched;
         }
         
+        // Note that depending on load order, other mods may not have had a chance to register their actions yet. In this example, that problem is solved by setting a dependency on the ProducerExample, but you can also just grab the actions later and not right at GameLaunched, too. It depends on when the other mods registered their actions.
         private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
         {
             api = Helper.ModRegistry.GetApi<ICrossModCompatibilityToolsAPI>("Spiderbuttons.CMCT")!;

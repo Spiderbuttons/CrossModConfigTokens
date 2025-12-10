@@ -27,23 +27,16 @@ namespace ProducerExample
             Helper.Events.GameLoop.GameLaunched += OnGameLaunched;
         }
 
-        private void Tester(Delegate obj)
-        {
-            Log.Debug("tester");
-            obj.DynamicInvoke();
-        }
-
         private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
         {
             api = Helper.ModRegistry.GetApi<ICrossModCompatibilityToolsAPI>("Spiderbuttons.CMCT")!;
 
             if (!api.TryRegisterAction(
-                    manifest: ModManifest,
                     actionId: "TestAction",
                     category: "Test",
                     name: () => "The name of this action goes here.",
                     description: () => "This action logs a little test log to the SMAPI console!",
-                    action: () => Log.Error("This doesn't do much."),
+                    action: TestAction,
                     customFields: null,
                     customData: new TestData("UniqueId/AssetName", () => "An icon for my whatever.", null),
                     error: out var error))
@@ -52,16 +45,6 @@ namespace ProducerExample
             }
 
             Log.Info("Successfully registered TestAction.");
-
-            var otherMod = ModHelper.ModRegistry.Get("Spiderbuttons.ButtonsExtraBooksCore")!;
-            if (!api.TryRegisterAction(otherMod.Manifest, TestAction, out error))
-            {
-                Log.Error(error);
-            }
-            
-            Log.Info("Successfully registered BookAction.");
-            
-            Tester(TestAction);
         }
         
         public void TestAction()

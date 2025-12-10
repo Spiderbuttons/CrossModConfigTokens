@@ -12,6 +12,7 @@ using CrossModCompatibilityTools.Tokens;
 using MonoMod.Utils;
 using StardewModdingAPI.Framework;
 using StardewModdingAPI.Internal.ConsoleWriting;
+using StardewModdingAPI.Utilities;
 using StardewValley.Extensions;
 
 namespace CrossModCompatibilityTools
@@ -104,7 +105,10 @@ namespace CrossModCompatibilityTools
         {
             if (e.Button is SButton.F2)
             {
-                //
+                if (!ConfigReader.TryGetModConfigValue<HashSet<string>>("CJBok.CheatsMenu", "FastMachines", out var luckPrice, out var error))
+                {
+                    Log.Error(error);
+                } else foreach (var s in luckPrice) Log.Warn(s);
             }
         }
 
